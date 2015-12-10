@@ -1,0 +1,11 @@
+/**
+ * 
+ */
+package utbm.ia54.projet.capacities
+
+/**
+ * @author Lucas
+ *
+ */
+capacity ^capacity {
+}
