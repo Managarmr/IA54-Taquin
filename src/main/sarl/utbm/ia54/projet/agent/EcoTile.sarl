@@ -1,9 +1,25 @@
 package utbm.ia54.projet.^agent
 
+import io.sarl.core.DefaultContextInteractions
+import io.sarl.core.Initialize
+import utbm.ia54.projet.message.UUIDEvent
+
 /**
  * @author Lucas
  *
  */
 agent EcoTile extends EcoAgent {
+	uses DefaultContextInteractions
+
 	
+	on Initialize {
+		num = occurrence.parameters.get(0) as Integer
+		println(num)
+	}
+	
+	on UUIDEvent {
+		idLinked = occurrence.src
+		println(ID + "\t" + idLinked)
+		killMe
+	}
 }

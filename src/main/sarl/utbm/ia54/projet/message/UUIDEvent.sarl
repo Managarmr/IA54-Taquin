@@ -1,0 +1,17 @@
+/**
+ * 
+ */
+package utbm.ia54.projet.message
+
+import java.util.UUID
+
+/**
+ * @author Lucas
+ *
+ */
+event UUIDEvent {
+	var src : UUID
+	new(m : UUID){
+		src = m
+	}
+}
