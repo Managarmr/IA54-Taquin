@@ -10,7 +10,8 @@ installer git :
 		git config --global user.email [votre adresse]
 	4) (facultatif) vous pouvez aussi choisir votre éditeur de texte par défaut (il sert à entrer les notes de commit et à réaliser les merge)
 		git config --global core.editor "'[chemin complet de votre editeur]' -multiInst -nosession"
-
+	5) modifier le paramètre de push par défaut : 
+		git --global push.default matching
 récupérer le projet : 
 	1) démarrer git bash et vous placer dans le dossier dans lequel vous voulez récupérer le projet
 		par exemple 'eclipse\ SARL/workspace'
