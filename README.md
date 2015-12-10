@@ -1,17 +1,18 @@
 # IA54-Taquin
 
 installer git : 
-	1) télécharger et installer git http://git-scm.com/downloads 
-		une documentation est disponible sur le site.
-		Je vous conseille de lire au moins les 3 premiers chapitre pour comprendre comment fonctionne git
-	2) démarrer git_bash
-	3) entrer les paramètres personnels pour vous identifer lors d'un commit
+	1) télécharger et installer git http://git-scm.com/downloads \n 
+		une documentation est disponible sur le site.\n
+		Je vous conseille de lire au moins les 3 premiers chapitre pour comprendre comment fonctionne git\n
+	2) démarrer git_bash\n
+	3) entrer les paramètres personnels pour vous identifer lors d'un commit\n
 		git config --global user.name [votre nom]
 		git config --global user.email [votre adresse]
 	4) (facultatif) vous pouvez aussi choisir votre éditeur de texte par défaut (il sert à entrer les notes de commit et à réaliser les merge)
 		git config --global core.editor "'[chemin complet de votre editeur]' -multiInst -nosession"
 	5) modifier le paramètre de push par défaut : 
 		git config --global push.default matching
+
 récupérer le projet : 
 	1) démarrer git bash et vous placer dans le dossier dans lequel vous voulez récupérer le projet
 		par exemple 'eclipse\ SARL/workspace'
@@ -38,7 +39,7 @@ Lancer le projet SARL :
 	4) dans l'onglet runtime environment, cocher Use a SRE et selectionner le jar Janus
 	5) cliquer sur apply puis run
 
-	récupérer les modification : 
+récupérer les modification : 
 	1) démarrer git_bash
 	2) se placer à l'intérieur le dossier du projet
 	Si vous n'avez rien modifié depuis votre dernière récupération : 
