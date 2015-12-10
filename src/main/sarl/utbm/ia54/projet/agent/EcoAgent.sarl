@@ -4,5 +4,5 @@ import java.util.UUID
 
 agent EcoAgent {
 	var idLinked : UUID
-	var num : int
+	var pos : int
 }

@@ -1,23 +1,35 @@
 package utbm.ia54.projet.^agent
 
+import io.sarl.core.Behaviors
+import io.sarl.core.DefaultContextInteractions
 import io.sarl.core.Initialize
 import io.sarl.core.Lifecycle
-import utbm.ia54.projet.message.UUIDMessage
+import io.sarl.util.OpenEventSpace
+import io.sarl.util.OpenEventSpaceSpecification
+import utbm.ia54.projet.message.PlaceTileSynchroMessage
 
 agent EcoTile extends EcoAgent {
 
-	uses Lifecycle
+	uses Lifecycle, DefaultContextInteractions, Behaviors
+	var space : OpenEventSpace
 	
 	on Initialize {
 		// Initialize parameters
-		num = occurrence.parameters.get(0) as Integer
+		pos = occurrence.parameters.get(0) as Integer
 	}
 	
-	on UUIDMessage {
+	on PlaceTileSynchroMessage {
+		if(space != null){
+			space.unregister(asEventListener())
+		}
 		idLinked = occurrence.id
-		
+		space = defaultContext.getOrCreateSpaceWithSpec(
+			typeof(OpenEventSpaceSpecification),
+			occurrence.space
+		)
+		space.register(asEventListener())
 		// Debug
-		println("Tile"+num+" | Id:"+ID+" | Linked:"+idLinked)
+		println("Tile"+pos+" | Id:"+ID+" | Linked:"+idLinked)
 		
 		killMe
 	}

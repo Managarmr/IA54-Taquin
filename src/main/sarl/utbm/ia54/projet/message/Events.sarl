@@ -6,10 +6,12 @@ event BroadcastMessage {
 	
 }
 
-event UUIDMessage {
+event PlaceTileSynchroMessage {
 	val id : UUID
+	val space : UUID
 	
-	new (id : UUID) {
+	new (id : UUID, space : UUID) {
 		this.id = id
+		this.space = space
 	}	
 }

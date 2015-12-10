@@ -4,6 +4,9 @@ import io.sarl.core.DefaultContextInteractions
 import io.sarl.core.Destroy
 import io.sarl.core.Initialize
 import io.sarl.core.Lifecycle
+import java.util.ArrayList
+import java.util.HashMap
+import java.util.UUID
 import utbm.ia54.projet.gui.EcoNPuzzleLauncher
 
 agent EcoNPuzzle {
@@ -14,9 +17,30 @@ agent EcoNPuzzle {
 	
 	on Initialize {
 		size = new Integer(occurrence.parameters.get(0) as String)
+		var spaceId = new ArrayList<UUID>
+		
+		for(i:0..<size*size){
+			spaceId.add(UUID.randomUUID)
+		}
+		var temp = new ArrayList<UUID>
 		for(i:1..<size*size+1) {
+			//get communication spaces
+			temp.clear
+			if(i > size){
+				temp.add(spaceId.get(i-size-1))
+			}
+			if(i < size*(size-1)){
+				temp.add(spaceId.get(i+size-1))
+			}
+			if(i%size != 1){
+				temp.add(spaceId.get(i-2))
+			}
+			if(i%size != 0){
+				temp.add(spaceId.get(i))
+			}
+			
 			// Create place and tile
-			spawn(EcoPlace, i, spawn(EcoTile, i))
+			spawn(EcoPlace, i, spaceId.get(i-1), temp, spawn(EcoTile, i))
 		}
 		
 		// Launch GUI
