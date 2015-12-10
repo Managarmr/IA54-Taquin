@@ -4,5 +4,5 @@
 *.war
 *.ear
 *._trace
-generated-sources/
+generated-sources/xtend/
 src-gen/
