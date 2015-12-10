@@ -1,11 +1,26 @@
 package utbm.ia54.projet.^agent
-/**
- * 
- */
+
+import io.sarl.core.Lifecycle
+import io.sarl.core.Initialize
+import io.sarl.core.Destroy
 
 /**
  * @author Lucas
  *
  */
 agent EcoAgent {
+	
+	var id : Integer
+	
+	uses Lifecycle
+	
+	on Initialize {
+		println("Hello !")
+		killMe
+	}
+	
+	on Destroy {
+		println("Bye bye !")
+	}
+	
 }
