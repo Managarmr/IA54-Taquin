@@ -1,5 +1,6 @@
 *.class
 
+.classpath
 *.jar
 *.war
 *.ear
