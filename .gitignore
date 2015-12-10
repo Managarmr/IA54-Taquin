@@ -5,3 +5,4 @@
 *.ear
 *._trace
 generated-sources/
+src-gen/
