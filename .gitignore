@@ -6,3 +6,4 @@
 *._trace
 generated-sources/xtend/
 src-gen/
+bin/
