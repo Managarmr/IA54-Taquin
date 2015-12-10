@@ -1,0 +1,10 @@
+/**
+ * 
+ */
+package utbm.ia54.projet.message
+
+/**
+ * @author Lucas
+ *
+ */
+event Broadcastmessage

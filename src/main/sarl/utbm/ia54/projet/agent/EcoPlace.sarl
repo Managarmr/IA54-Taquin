@@ -1,0 +1,11 @@
+/**
+ * 
+ */
+package utbm.ia54.projet.^agent
+
+/**
+ * @author Lucas
+ *
+ */
+agent EcoPlace extends EcoAgent{
+}
