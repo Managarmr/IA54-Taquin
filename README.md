@@ -1,11 +1,11 @@
 # IA54-Taquin
 
 installer git : 
-	1) télécharger et installer git http://git-scm.com/downloads \n 
-		une documentation est disponible sur le site.\n
-		Je vous conseille de lire au moins les 3 premiers chapitre pour comprendre comment fonctionne git\n
-	2) démarrer git_bash\n
-	3) entrer les paramètres personnels pour vous identifer lors d'un commit\n
+	1) télécharger et installer git http://git-scm.com/downloads 
+		une documentation est disponible sur le site.
+		Je vous conseille de lire au moins les 3 premiers chapitre pour comprendre comment fonctionne git
+	2) démarrer git_bash
+	3) entrer les paramètres personnels pour vous identifer lors d'un commit
 		git config --global user.name [votre nom]
 		git config --global user.email [votre adresse]
 	4) (facultatif) vous pouvez aussi choisir votre éditeur de texte par défaut (il sert à entrer les notes de commit et à réaliser les merge)
