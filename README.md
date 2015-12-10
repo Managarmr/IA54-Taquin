@@ -60,3 +60,7 @@ Upload des modification :
 	8) TOUT AUSSI IMPORTANT !!! taper git rebase pour fusionner vos modification avec celles récupérées
 	9) si besoin résoudre les conflits remontés par git
 	10) taper git push et se logger pour envoyer vos modifications sur github
+
+	
+Lien vers la cheatsheet git qui résume les commande git : 
+http://ndpsoftware.com/git-cheatsheet.html#loc=stash;
