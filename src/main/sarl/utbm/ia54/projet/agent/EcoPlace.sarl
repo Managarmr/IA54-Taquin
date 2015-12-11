@@ -51,27 +51,26 @@ agent EcoPlace extends EcoAgent {
 //		println("Place"+pos+" | Id:"+ID+" | Linked:"+idLinked)
 			
 		// 
-		killMe
 	}
 	
-//	on TilePlaced {
-//		idLinked = occurrence.id
-//		emit(new AskSynchroMessage(ID,pos), Scopes.addresses(globalSpace.getAddress(idLinked)))
-//	}
-//	
-//	on AskSynchroMessage{
-//		idLinked = occurrence.id
-//		tileObj = occurrence.pos
-//		emit(new SynchroResponse(ID,pos),Scopes.addresses(globalSpace.getAddress(idLinked)))
-//	}
-//	
-//	on SynchroResponse{
-//		idLinked = occurrence.id
-//		tileObj = occurrence.pos
-//	}
+	on TilePlaced {
+		idLinked = occurrence.id
+		emit(new AskSynchroMessage(ID,pos), Scopes.addresses(globalSpace.getAddress(idLinked)))
+	}
+	
+	on AskSynchroMessage{
+		idLinked = occurrence.id
+		tileObj = occurrence.pos
+		emit(new SynchroResponse(ID,pos),Scopes.addresses(globalSpace.getAddress(idLinked)))
+	}
+	
+	on SynchroResponse{
+		idLinked = occurrence.id
+		tileObj = occurrence.pos
+	}
 	
 	on LogMessage{
-		println("id : " + ID + " | pos : " + pos + " | linkedId : " + idLinked + " | posObjLinked : " + tileObj + "\n")
+		println("Place : id : " + ID + " | pos : " + pos + " | linkedId : " + idLinked + " | posObjLinked : " + tileObj)
 		killMe
 	}
 }

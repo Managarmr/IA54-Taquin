@@ -58,7 +58,7 @@ agent EcoNPuzzle {
 		}
 		Thread.sleep(1000)
 		for(p as UUID : places){
-			var t = tiles.get(Math.floor(Math.random * tiles.size) as int)
+			var t = tiles.remove(Math.floor(Math.random * tiles.size) as int)
 			globalSpace.emit(new TilePlaced(t), Scopes.addresses(globalSpace.getAddress(p)))
 		}
 		Thread.sleep(1000)

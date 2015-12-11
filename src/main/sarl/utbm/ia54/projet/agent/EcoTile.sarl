@@ -26,23 +26,20 @@ agent EcoTile extends EcoAgent {
 		globalSpace.register(asEventListener)
 	}
 	
-//	on AskSynchroMessage {
-//		idLinked = occurrence.id
-//		pos = occurrence.pos
-//		emit(new SynchroResponse(ID,posFinale),Scopes.addresses(globalSpace.getAddress(idLinked)))
-//		// Debug
-//		println("Tile"+pos+" | Id:"+ID+" | Linked:"+idLinked)
-//		
-//		killMe
-//	}
-//	
-//	on SynchroResponse{
-//		idLinked = occurrence.id
-//		pos = occurrence.pos
-//	}
+	on AskSynchroMessage {
+		idLinked = occurrence.id
+		pos = occurrence.pos
+		emit(new SynchroResponse(ID,posFinale),Scopes.addresses(globalSpace.getAddress(idLinked)))
+		
+	}
+	
+	on SynchroResponse{
+		idLinked = occurrence.id
+		pos = occurrence.pos
+	}
 	
 	on LogMessage{
-		println("id : " + ID + " | pos " + pos + " | idLinked : " + idLinked + " | posFinale : " + posFinale + "\n")
+		println("Tile : id : " + ID + " | pos " + pos + " | idLinked : " + idLinked + " | posFinale : " + posFinale)
 		killMe
 	}
 }
