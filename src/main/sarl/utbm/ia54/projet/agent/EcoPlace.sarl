@@ -35,11 +35,6 @@ agent EcoPlace extends EcoAgent {
 			spaceUUID
 		);
 		space.register(asEventListener())
-		globalSpace = defaultContext.getOrCreateSpaceWithSpec(
-			typeof(OpenEventSpaceSpecification),
-			occurrence.parameters.get(3) as UUID
-		)
-		globalSpace.register(asEventListener)
 		for(t as UUID : occurrence.parameters.get(2) as ArrayList<UUID>){
 			defaultContext.getOrCreateSpaceWithSpec(
 				typeof(OpenEventSpaceSpecification),
@@ -55,13 +50,13 @@ agent EcoPlace extends EcoAgent {
 	
 	on TilePlaced {
 		idLinked = occurrence.id
-		emit(new AskSynchroMessage(ID,pos), Scopes.addresses(globalSpace.getAddress(idLinked)))
+		emit(new AskSynchroMessage(ID,pos), Scopes.addresses(defaultSpace.getAddress(idLinked)))
 	}
 	
 	on AskSynchroMessage{
 		idLinked = occurrence.id
 		tileObj = occurrence.pos
-		emit(new SynchroResponse(ID,pos),Scopes.addresses(globalSpace.getAddress(idLinked)))
+		emit(new SynchroResponse(ID,pos),Scopes.addresses(defaultSpace.getAddress(idLinked)))
 	}
 	
 	on SynchroResponse{

@@ -1,10 +1,8 @@
 package utbm.ia54.projet.^agent
 
-import io.sarl.util.OpenEventSpace
 import java.util.UUID
 
 agent EcoAgent {
 	var idLinked : UUID
 	var pos : int
-	var globalSpace : OpenEventSpace
 }
