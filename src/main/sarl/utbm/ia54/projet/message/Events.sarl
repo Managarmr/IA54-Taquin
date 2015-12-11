@@ -6,12 +6,30 @@ event BroadcastMessage {
 	
 }
 
-event PlaceTileSynchroMessage {
-	val id : UUID
-	val space : UUID
-	
-	new (id : UUID, space : UUID) {
+event TilePlaced {
+	val id : UUID 
+	new (id : UUID){
 		this.id = id
-		this.space = space
+	}
+}
+
+event AskSynchroMessage{
+	val id : UUID
+	val pos : Integer
+	
+	new (id : UUID, pos : Integer) {
+		this.id = id
+		this.pos = pos
 	}	
 }
+
+event SynchroResponse{
+	val id : UUID
+	val pos : Integer
+	new(id : UUID,pos : Integer){
+		this.id = id
+		this.pos = pos
+	}
+}
+
+event LogMessage
