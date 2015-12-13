@@ -1,5 +1,6 @@
 package utbm.ia54.projet.message
 
+import java.util.ArrayList
 import java.util.UUID
 
 event BroadcastMessage {
@@ -32,4 +33,55 @@ event SynchroResponse{
 	}
 }
 
+event BecomeLeader{
+	var position : int
+	new (tileFinalPosition : int){
+		this.position = tileFinalPosition;
+	}
+}
+
+event  ExchangeMessage{
+	var idPlace : UUID
+	new (idPlace : UUID){
+		this.idPlace = idPlace
+	}
+}
+
+event ExchangeResponse{
+	var idPlace : UUID
+	new (idPlace : UUID){
+		this.idPlace = idPlace
+	}
+}
+
+event FindBlank{
+	var src : UUID
+	new(src : UUID){
+		this.src = src
+	}
+}
+
+event BlankGradient{
+	var askedBy : UUID
+	var path : ArrayList<UUID>
+	new(askedBy : UUID, path : ArrayList<UUID>){
+		this.askedBy = askedBy
+		this.path = path
+	}
+}
+
+event PathMessage{
+	var path : ArrayList<UUID>
+	new(path : ArrayList<UUID>){
+		this.path = path
+	}
+}
+
+//TODO à supprimer quand le debug sera fini
+event sendFindBlank
+ 
+
+event showPath
+
 event LogMessage
+event KillMessage

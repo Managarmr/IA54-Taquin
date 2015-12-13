@@ -1,5 +1,6 @@
 package utbm.ia54.projet.^agent
 
+import io.sarl.core.Behaviors
 import io.sarl.core.DefaultContextInteractions
 import io.sarl.core.Destroy
 import io.sarl.core.Initialize
@@ -13,10 +14,69 @@ import utbm.ia54.projet.message.TilePlaced
 
 agent EcoNPuzzle {
 	
-	uses DefaultContextInteractions, Lifecycle, Logging
+	uses DefaultContextInteractions, Lifecycle, Logging,Behaviors
 	
 	var size : int
-	
+//debug
+//on Initialize {
+//		size = new Integer(occurrence.parameters.get(0) as String)
+//		var spaceId = new ArrayList<UUID>
+//		for(i:0..<size*size){
+//			spaceId.add(UUID.randomUUID)
+//		}
+//		
+//		var tiles = new ArrayList<UUID>
+//		var places = new ArrayList<UUID>
+//		
+//		var temp = new ArrayList<UUID>
+//		for(i:1..<size*size +1) {
+//			//get communication spaces
+//			temp.clear
+//			if(i > size){
+//				temp.add(spaceId.get(i-size-1))
+//			}
+//			if(i <= size*(size-1)){
+//				temp.add(spaceId.get(i+size-1))
+//			}
+//			if(i%size != 1){
+//				temp.add(spaceId.get(i-2))
+//			}
+//			if(i%size != 0){
+//				temp.add(spaceId.get(i))
+//			}
+//			
+//			// Create place and tile
+//			places.add(spawn(EcoPlace, i, size, spaceId.get(i-1), temp))
+//			tiles.add(spawn(EcoTile, i, size))
+//			emit(new TilePlaced(tiles.get(i-1)),Scopes.addresses(defaultSpace.getAddress(places.get(i-1))))
+//		}
+//		Thread.sleep(1000)
+////		var space = defaultContext.getOrCreateSpaceWithID(
+////			spaceId.get(0),
+////			typeof(OpenEventSpaceSpecification)
+////		)
+////		space.register(asEventListener)
+////		space.emit(new LogMessage);
+//		emit(new LogMessage)
+//		emit(new sendFindBlank, Scopes.addresses(defaultSpace.getAddress(tiles.get(0))))
+//		Thread.sleep(1000)
+//		emit(new showPath, Scopes.addresses(defaultSpace.getAddress(places.get(0))))
+//		
+//		emit(new KillMessage)
+////		for(p as UUID : places){
+////			var t = tiles.remove(Math.floor(Math.random * tiles.size) as int)
+////			emit(new TilePlaced(t), Scopes.addresses(defaultSpace.getAddress(p)))
+////		}
+////		Thread.sleep(1000)
+////		emit(new LogMessage)
+//		// Launch GUI
+////		EcoNPuzzleLauncher.launchInterface()
+//		
+//		// Stop creating
+//		killMe
+//	}
+
+//*	
 	on Initialize {
 		size = new Integer(occurrence.parameters.get(0) as String)
 		var spaceId = new ArrayList<UUID>
@@ -45,8 +105,8 @@ agent EcoNPuzzle {
 			}
 			
 			// Create place and tile
-			places.add(spawn(EcoPlace, i, spaceId.get(i-1), temp))
-			tiles.add(spawn(EcoTile, i))
+			places.add(spawn(EcoPlace, i, size, spaceId.get(i-1), temp))
+			tiles.add(spawn(EcoTile, i, size))
 		}
 		Thread.sleep(1000)
 		for(p as UUID : places){
@@ -61,6 +121,7 @@ agent EcoNPuzzle {
 		// Stop creating
 		killMe
 	}
+//*/
 	
 	on Destroy{
 		

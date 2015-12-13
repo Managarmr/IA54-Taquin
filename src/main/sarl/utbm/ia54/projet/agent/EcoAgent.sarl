@@ -5,4 +5,11 @@ import java.util.UUID
 agent EcoAgent {
 	var idLinked : UUID
 	var pos : int
+	var puzzleSize : int
+	var state : SatisfactionState
 }
+enum SatisfactionState{
+		UNSATISFIED,
+		SATISFIED,
+		FULLY_SATISFIED
+	}

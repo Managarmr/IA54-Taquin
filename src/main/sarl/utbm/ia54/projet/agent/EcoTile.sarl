@@ -1,22 +1,33 @@
 package utbm.ia54.projet.^agent
 
-import io.sarl.core.Behaviors
 import io.sarl.core.DefaultContextInteractions
 import io.sarl.core.Initialize
 import io.sarl.core.Lifecycle
 import io.sarl.util.Scopes
+import java.util.UUID
 import utbm.ia54.projet.message.AskSynchroMessage
+import utbm.ia54.projet.message.BecomeLeader
+import utbm.ia54.projet.message.ExchangeMessage
+import utbm.ia54.projet.message.ExchangeResponse
+import utbm.ia54.projet.message.FindBlank
+import utbm.ia54.projet.message.KillMessage
 import utbm.ia54.projet.message.LogMessage
 import utbm.ia54.projet.message.SynchroResponse
+import utbm.ia54.projet.message.sendFindBlank
 
 agent EcoTile extends EcoAgent {
 
-	uses Lifecycle, DefaultContextInteractions,Behaviors
+	uses Lifecycle, DefaultContextInteractions
 	
 	var posFinale : Integer
+	var isLeader : boolean
+	
 	on Initialize {
 		// Initialize parameters
 		posFinale = occurrence.parameters.get(0) as Integer
+		isLeader = false
+		state = SatisfactionState.UNSATISFIED
+		puzzleSize = occurrence.parameters.get(1) as Integer
 	}
 	
 	on AskSynchroMessage {
@@ -31,8 +42,52 @@ agent EcoTile extends EcoAgent {
 		pos = occurrence.pos
 	}
 	
+	//TODO à supprimer quand le débug sera fini
 	on LogMessage{
 		println("Tile : id : " + ID + " | pos " + pos + " | idLinked : " + idLinked + " | posFinale : " + posFinale)
+//		killMe
+	}
+	
+	on BecomeLeader{
+		if (occurrence.position == posFinale){
+			isLeader = true
+		}
+	}
+	
+	
+	
+	def computeNextLeader : int{
+		var xPos = (posFinale%puzzleSize) -1
+		var yPos = (posFinale-xPos-1)/puzzleSize
+		// on est en train de placer les tuiles de la ligne supérieure
+		if(xPos > yPos){
+			xPos--;
+		}
+		// on place les tuiles de la colone gauche
+		else {
+			yPos++;
+		}
+		return yPos*puzzleSize+xPos +1
+	}
+	
+	on ExchangeMessage{
+		var evt = new ExchangeResponse(this.idLinked)
+		evt.source = defaultSpace.getAddress(this.ID)
+		emit(evt, Scopes.addresses(occurrence.source))
+		
+		emit(new AskSynchroMessage(this.ID,this.posFinale), Scopes.addresses(defaultSpace.getAddress(occurrence.idPlace)))
+	}
+	
+	on ExchangeResponse{
+		emit(new AskSynchroMessage(this.ID,this.posFinale), Scopes.addresses(defaultSpace.getAddress(occurrence.idPlace)))
+	}
+	
+	on KillMessage{
 		killMe
 	}
+	
+	on sendFindBlank{
+		emit(new FindBlank(this.ID))
+	}
+	
 }
