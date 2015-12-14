@@ -33,6 +33,13 @@ event SynchroResponse{
 	}
 }
 
+event SynchroDone{
+	var id : UUID
+	new(id : UUID){
+		this.id = id
+	}
+}
+
 event BecomeLeader{
 	var position : int
 	new (tileFinalPosition : int){

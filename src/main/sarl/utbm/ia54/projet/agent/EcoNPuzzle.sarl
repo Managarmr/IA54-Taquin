@@ -9,8 +9,12 @@ import io.sarl.core.Logging
 import io.sarl.util.Scopes
 import java.util.ArrayList
 import java.util.UUID
+import utbm.ia54.projet.message.KillMessage
 import utbm.ia54.projet.message.LogMessage
+import utbm.ia54.projet.message.SynchroDone
 import utbm.ia54.projet.message.TilePlaced
+import utbm.ia54.projet.message.sendFindBlank
+import utbm.ia54.projet.message.showPath
 
 agent EcoNPuzzle {
 	
@@ -18,39 +22,42 @@ agent EcoNPuzzle {
 	
 	var size : int
 //debug
-//on Initialize {
-//		size = new Integer(occurrence.parameters.get(0) as String)
-//		var spaceId = new ArrayList<UUID>
-//		for(i:0..<size*size){
-//			spaceId.add(UUID.randomUUID)
-//		}
-//		
+/*
+var places = new ArrayList<UUID>
+var tiles = new ArrayList<UUID>
+var synchroPlaces = new ArrayList<UUID>
+on Initialize {
+		size = new Integer(occurrence.parameters.get(0) as String)
+		var spaceId = new ArrayList<UUID>
+		for(i:0..<size*size){
+			spaceId.add(UUID.randomUUID)
+		}
+		
 //		var tiles = new ArrayList<UUID>
 //		var places = new ArrayList<UUID>
-//		
-//		var temp = new ArrayList<UUID>
-//		for(i:1..<size*size +1) {
-//			//get communication spaces
-//			temp.clear
-//			if(i > size){
-//				temp.add(spaceId.get(i-size-1))
-//			}
-//			if(i <= size*(size-1)){
-//				temp.add(spaceId.get(i+size-1))
-//			}
-//			if(i%size != 1){
-//				temp.add(spaceId.get(i-2))
-//			}
-//			if(i%size != 0){
-//				temp.add(spaceId.get(i))
-//			}
-//			
-//			// Create place and tile
-//			places.add(spawn(EcoPlace, i, size, spaceId.get(i-1), temp))
-//			tiles.add(spawn(EcoTile, i, size))
-//			emit(new TilePlaced(tiles.get(i-1)),Scopes.addresses(defaultSpace.getAddress(places.get(i-1))))
-//		}
-//		Thread.sleep(1000)
+		
+		
+		for(i:1..<size*size +1) {
+			//get communication spaces
+			var temp = new ArrayList<UUID>
+			if(i > size){
+				temp.add(spaceId.get(i-size-1))
+			}
+			if(i <= size*(size-1)){
+				temp.add(spaceId.get(i+size-1))
+			}
+			if(i%size != 1){
+				temp.add(spaceId.get(i-2))
+			}
+			if(i%size != 0){
+				temp.add(spaceId.get(i))
+			}
+			
+			// Create place and tile
+			places.add(spawn(EcoPlace, i, size, spaceId.get(i-1), temp))
+			tiles.add(spawn(EcoTile, i, size))
+			emit(new TilePlaced(tiles.get(i-1)),Scopes.addresses(defaultSpace.getAddress(places.get(i-1))))
+		}
 ////		var space = defaultContext.getOrCreateSpaceWithID(
 ////			spaceId.get(0),
 ////			typeof(OpenEventSpaceSpecification)
@@ -59,7 +66,7 @@ agent EcoNPuzzle {
 ////		space.emit(new LogMessage);
 //		emit(new LogMessage)
 //		emit(new sendFindBlank, Scopes.addresses(defaultSpace.getAddress(tiles.get(0))))
-//		Thread.sleep(1000)
+//		Thread.sleep(2000)
 //		emit(new showPath, Scopes.addresses(defaultSpace.getAddress(places.get(0))))
 //		
 //		emit(new KillMessage)
@@ -74,7 +81,23 @@ agent EcoNPuzzle {
 //		
 //		// Stop creating
 //		killMe
-//	}
+	}
+	
+	on SynchroDone{
+		synchroPlaces.add(occurrence.id as UUID)
+		if(synchroPlaces.containsAll(places)){
+			emit(new LogMessage)
+			emit(new sendFindBlank, Scopes.addresses(defaultSpace.getAddress(tiles.get(0))))
+			Thread.sleep(2000)
+			emit(new showPath, Scopes.addresses(defaultSpace.getAddress(places.get(0))))
+			
+			emit(new KillMessage)
+			
+			// Stop creating
+			killMe
+		}
+	}
+//*/
 
 //*	
 	on Initialize {

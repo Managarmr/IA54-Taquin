@@ -14,6 +14,7 @@ import utbm.ia54.projet.message.BlankGradient
 import utbm.ia54.projet.message.FindBlank
 import utbm.ia54.projet.message.KillMessage
 import utbm.ia54.projet.message.LogMessage
+import utbm.ia54.projet.message.SynchroDone
 import utbm.ia54.projet.message.SynchroResponse
 import utbm.ia54.projet.message.TilePlaced
 import utbm.ia54.projet.message.showPath
@@ -40,7 +41,6 @@ agent EcoPlace extends EcoAgent {
 			spaceUUID,
 			typeof(OpenEventSpaceSpecification)
 		);
-		space.register(asEventListener())
 		for(s as UUID : occurrence.parameters.get(3) as ArrayList<UUID>){
 			defaultContext.getOrCreateSpaceWithID(
 				s,
@@ -50,8 +50,12 @@ agent EcoPlace extends EcoAgent {
 	}
 	
 	on TilePlaced {
-		idLinked = occurrence.id
-		emit(new AskSynchroMessage(ID,pos), Scopes.addresses(defaultSpace.getAddress(idLinked)))
+		emit(new AskSynchroMessage(ID,pos), Scopes.addresses(defaultSpace.getAddress(occurrence.id)))
+		while(idLinked == null || tileObj == null){
+			Thread.sleep(500)
+			emit(new AskSynchroMessage(ID,pos), Scopes.addresses(defaultSpace.getAddress(occurrence.id)))
+		}
+		emit(new SynchroDone(this.ID))
 	}
 	
 	on AskSynchroMessage{
@@ -76,7 +80,8 @@ agent EcoPlace extends EcoAgent {
 	on BlankGradient{
 		if(occurrence.askedBy != idLinked){
 			if(!occurrence.path.contains(idLinked)){
-				var path = occurrence.path
+				var path = new ArrayList<UUID>
+				path.addAll(occurrence.path)
 				path.add(idLinked)
 				space.emit(new BlankGradient(occurrence.askedBy, path))
 			}
