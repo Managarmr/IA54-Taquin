@@ -4,18 +4,20 @@ Fait :
 	placement des tuile sur les places (synchronisation)
 	recherche de chemin vers la tuile blanche
 	échange de place de la tuile blanche avec une tuile adjacente
+	déplacement d'une tuile == échange de place avec la tuile blanche
 	recherche du chemin vers l'objectif
 
 A tester : 
 	désignation du leader
 	
-A faire : 
+En cours : 
 	réaction à une aggression
+
+A faire : 
 	recherche de satisfaction (aggression d'une autre tuile)
-	déplacement d'une tuile
 	changement d'état vers SATISFIED
 	changement d'état vers FULLY_SATISFIED
 	résolution des coin
 	déblocage d'une situation
 	gestion d"un puzzle impossible à finir
-	
+	interface graphique

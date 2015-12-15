@@ -116,7 +116,22 @@ event PathMessage{
 }
 
 //test
+event AggressionMessage{
+	var aggresseurID : UUID
+}
 
+event FleeAggressionMessage extends AggressionMessage{
+	var path : ArrayList<UUID>
+}
+
+event LeaderAggressionMessage extends AggressionMessage
+
+event FledMessage{
+	var blankID : UUID
+	new(blankID : UUID){
+		this.blankID = blankID
+	}
+}
 
 
 
@@ -127,3 +142,10 @@ event sendFindBlank
 event showPath
 event LogMessage
 event KillMessage
+
+event sendAggro{
+	var target : UUID
+	new(target : UUID){
+		this.target = target
+	}
+}

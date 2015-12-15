@@ -4,18 +4,25 @@ import io.sarl.core.DefaultContextInteractions
 import io.sarl.core.Initialize
 import io.sarl.core.Lifecycle
 import io.sarl.util.Scopes
+import java.util.ArrayList
+import java.util.UUID
+import utbm.ia54.projet.message.AggressionMessage
 import utbm.ia54.projet.message.AskSynchroMessage
 import utbm.ia54.projet.message.BecomeLeader
 import utbm.ia54.projet.message.ExchangeMessage
 import utbm.ia54.projet.message.ExchangeResponse
 import utbm.ia54.projet.message.FindBlank
 import utbm.ia54.projet.message.FindGoal
+import utbm.ia54.projet.message.FleeAggressionMessage
 import utbm.ia54.projet.message.IsEveryoneSynchro
 import utbm.ia54.projet.message.IsSynchro
 import utbm.ia54.projet.message.KillMessage
+import utbm.ia54.projet.message.LeaderAggressionMessage
 import utbm.ia54.projet.message.LogMessage
+import utbm.ia54.projet.message.PathMessage
 import utbm.ia54.projet.message.PlacedOn
 import utbm.ia54.projet.message.SynchroResponse
+import utbm.ia54.projet.message.sendAggro
 import utbm.ia54.projet.message.sendFindBlank
 import utbm.ia54.projet.message.sendFindGoal
 
@@ -122,7 +129,57 @@ agent EcoTile extends EcoAgent {
 	on sendFindGoal{
 		emit(new FindGoal(this.ID, this.posFinale))
 	}
+	
+	on sendAggro{
+		var evt = new LeaderAggressionMessage
+		evt.aggresseurID = this.ID
+		emit(evt, Scopes.addresses(defaultSpace.getAddress(occurrence.target)))
+	}
 
 //test
+var aggresseurID : UUID
+on FleeAggressionMessage{
+	if(posFinale!=this.puzzleSize*this.puzzleSize){
+		this.aggresseurID = occurrence.aggresseurID
+		var path = occurrence.path.clone as ArrayList<UUID>
+		var evt = new FleeAggressionMessage
+		evt.aggresseurID = this.ID
+		evt.path = path
+		emit(evt, Scopes.addresses(defaultSpace.getAddress(path.remove(path.size-1))))		
+	}
+}
+
+on LeaderAggressionMessage{
+	if(posFinale != puzzleSize*puzzleSize){
+		aggresseurID = occurrence.aggresseurID
+		emit(new FindBlank(this.ID))
+	}
+}
+
+on AggressionMessage{
+	if(posFinale == puzzleSize*puzzleSize){
+		emit(new ExchangeMessage(this.idLinked),Scopes.addresses(defaultSpace.getAddress(occurrence.aggresseurID)))
+	}
+}
+on PathMessage{
+	var path = occurrence.path.clone as ArrayList<UUID>
+	for(p as UUID : path){
+		println(p)
+	}
+	if(aggresseurID === null){
+		var evt = new LeaderAggressionMessage
+		var target = path.remove(path.size-1)
+		evt.aggresseurID = this.ID
+		emit(evt,Scopes.addresses(defaultSpace.getAddress(target)))
+	}
+	else{
+		var evt = new FleeAggressionMessage
+		evt.aggresseurID = this.aggresseurID
+		var target = path.remove(path.size-1)
+		evt.path = path
+		emit(evt,Scopes.addresses(defaultSpace.getAddress(target)))
+	}
+}
+
 	
 }
