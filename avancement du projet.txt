@@ -4,12 +4,12 @@ Fait :
 	placement des tuile sur les places (synchronisation)
 	recherche de chemin vers la tuile blanche
 	échange de place de la tuile blanche avec une tuile adjacente
+	recherche du chemin vers l'objectif
 
 A tester : 
 	désignation du leader
 	
 A faire : 
-	recherche du chemin vers l'objectif
 	réaction à une aggression
 	recherche de satisfaction (aggression d'une autre tuile)
 	déplacement d'une tuile
