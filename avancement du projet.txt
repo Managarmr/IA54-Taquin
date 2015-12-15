@@ -1,22 +1,21 @@
-Agent EcoNPuzzle : 
-	créé les espace de communication propre à chaque place.
-	Créé les places avec sa position, son espace de communication et ceux auxquels elles appartiennent (places en croix)
-	Créé les tuiles avec leur position objectif
-	envoie un message TilePlaced aux tuiles leur indiquant l'id de la tuile les occupant.
+Fait : 
+	crÃ©ation des tuiles
+	crÃ©ation des places avec leur espace
+	placement des tuile sur les places (synchronisation)
+	recherche de chemin vers la tuile blanche
+	Ã©change de place de la tuile blanche avec une tuile adjacente
 
-Agent EcoPlace
-	s'incrit à chaque espace auquel elle appartient mais ne conserve en mémoire que son propre espace.
-	reçoit un message TilePlaced : 
-		enregistre l'id de la tuile
-		envoie un message AskSynchroMessage à la tuile en question dans le defaultSpace
-	reçoit un AskSynchroMessage : 
-		enregistre l'id et la position objectif de la tuile
-		envoie une SynchroResponse avec son ID et sa position à l'expediteur
-	reçoit une SynchroResponse :
-		enregistre l'id et la position objectif de la tuile.
-Agent EcoTile
-	reçoit un AskSynchroMessage : 
-		enregistre l'id et la position de la place
-		envoie une SynchroResponse avec son ID et sa position objectif à l'expediteur
-	reçoit une SynchroResponse :
-		enregistre l'id et la position de la place
+A tester : 
+	dÃ©signation du leader
+	
+A faire : 
+	recherche du chemin vers l'objectif
+	rÃ©action Ã  une aggression
+	recherche de satisfaction (aggression d'une autre tuile)
+	dÃ©placement d'une tuile
+	changement d'Ã©tat vers SATISFIED
+	changement d'Ã©tat vers FULLY_SATISFIED
+	rÃ©solution des coin
+	dÃ©blocage d'une situation
+	gestion d"un puzzle impossible Ã  finir
+	
