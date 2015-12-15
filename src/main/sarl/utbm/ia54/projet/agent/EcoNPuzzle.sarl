@@ -8,11 +8,13 @@ import io.sarl.core.Lifecycle
 import io.sarl.core.Logging
 import io.sarl.util.Scopes
 import java.util.ArrayList
+import java.util.HashSet
 import java.util.UUID
+import utbm.ia54.projet.message.IsEveryoneSynchro
+import utbm.ia54.projet.message.IsSynchro
 import utbm.ia54.projet.message.KillMessage
 import utbm.ia54.projet.message.LogMessage
-import utbm.ia54.projet.message.SynchroDone
-import utbm.ia54.projet.message.TilePlaced
+import utbm.ia54.projet.message.PlacedOn
 import utbm.ia54.projet.message.sendFindBlank
 import utbm.ia54.projet.message.showPath
 
@@ -21,12 +23,12 @@ agent EcoNPuzzle {
 	uses DefaultContextInteractions, Lifecycle, Logging,Behaviors
 	
 	var size : int
+	var tiles = new ArrayList<UUID>
+	var places = new ArrayList<UUID>
+		
 //debug
 /*
-var places = new ArrayList<UUID>
-var tiles = new ArrayList<UUID>
-var synchroPlaces = new ArrayList<UUID>
-on Initialize {
+	on Initialize {
 		size = new Integer(occurrence.parameters.get(0) as String)
 		var spaceId = new ArrayList<UUID>
 		for(i:0..<size*size){
@@ -52,51 +54,24 @@ on Initialize {
 			if(i%size != 0){
 				temp.add(spaceId.get(i))
 			}
-			
 			// Create place and tile
 			places.add(spawn(EcoPlace, i, size, spaceId.get(i-1), temp))
 			tiles.add(spawn(EcoTile, i, size))
-			emit(new TilePlaced(tiles.get(i-1)),Scopes.addresses(defaultSpace.getAddress(places.get(i-1))))
+			emit(new PlacedOn(places.get(i-1)),Scopes.addresses(defaultSpace.getAddress(tiles.get(i-1))))
 		}
-////		var space = defaultContext.getOrCreateSpaceWithID(
-////			spaceId.get(0),
-////			typeof(OpenEventSpaceSpecification)
-////		)
-////		space.register(asEventListener)
-////		space.emit(new LogMessage);
-//		emit(new LogMessage)
+//		for(i:1..<size*size+1){
+//			emit(new PlacedOn(places.get(i-1)),Scopes.addresses(defaultSpace.getAddress(tiles.get(i-1))))
+//		}
+		synchro
+		emit(new LogMessage)
 //		emit(new sendFindBlank, Scopes.addresses(defaultSpace.getAddress(tiles.get(0))))
 //		Thread.sleep(2000)
 //		emit(new showPath, Scopes.addresses(defaultSpace.getAddress(places.get(0))))
-//		
-//		emit(new KillMessage)
-////		for(p as UUID : places){
-////			var t = tiles.remove(Math.floor(Math.random * tiles.size) as int)
-////			emit(new TilePlaced(t), Scopes.addresses(defaultSpace.getAddress(p)))
-////		}
-////		Thread.sleep(1000)
-////		emit(new LogMessage)
-//		// Launch GUI
-////		EcoNPuzzleLauncher.launchInterface()
-//		
-//		// Stop creating
-//		killMe
+
+		// Stop creating
+		killMe
 	}
 	
-	on SynchroDone{
-		synchroPlaces.add(occurrence.id as UUID)
-		if(synchroPlaces.containsAll(places)){
-			emit(new LogMessage)
-			emit(new sendFindBlank, Scopes.addresses(defaultSpace.getAddress(tiles.get(0))))
-			Thread.sleep(2000)
-			emit(new showPath, Scopes.addresses(defaultSpace.getAddress(places.get(0))))
-			
-			emit(new KillMessage)
-			
-			// Stop creating
-			killMe
-		}
-	}
 //*/
 
 //*	
@@ -107,12 +82,10 @@ on Initialize {
 			spaceId.add(UUID.randomUUID)
 		}
 		
-		var tiles = new ArrayList<UUID>
-		var places = new ArrayList<UUID>
 		
-		var temp = new ArrayList<UUID>
 		for(i:1..<size*size+1) {
 			//get communication spaces
+			var temp = new ArrayList<UUID>
 			temp.clear
 			if(i > size){
 				temp.add(spaceId.get(i-size-1))
@@ -131,13 +104,17 @@ on Initialize {
 			places.add(spawn(EcoPlace, i, size, spaceId.get(i-1), temp))
 			tiles.add(spawn(EcoTile, i, size))
 		}
-		Thread.sleep(1000)
-		for(p as UUID : places){
-			var t = tiles.remove(Math.floor(Math.random * tiles.size) as int)
-			emit(new TilePlaced(t), Scopes.addresses(defaultSpace.getAddress(p)))
+		var placesTemp = places.clone as ArrayList<UUID>
+		for(t as UUID : tiles){
+			var p = placesTemp.remove(Math.floor(Math.random * placesTemp.size) as int)
+			emit(new PlacedOn(p), Scopes.addresses(defaultSpace.getAddress(t)))
 		}
-		Thread.sleep(1000)
+		synchro
 		emit(new LogMessage)
+		emit(new sendFindBlank, Scopes.addresses(defaultSpace.getAddress(tiles.get(0))))
+		Thread.sleep(2000)
+		emit(new showPath, Scopes.addresses(defaultSpace.getAddress(places.get(0))))
+		
 		// Launch GUI
 //		EcoNPuzzleLauncher.launchInterface()
 		
@@ -146,7 +123,22 @@ on Initialize {
 	}
 //*/
 	
+	//synchronize
+	var synchroTiles = new HashSet<UUID>
+	
+	on IsSynchro{
+		synchroTiles.add(occurrence.tileId)
+	}
+	
+	def synchro{
+		synchroTiles.clear
+		while(!synchroTiles.containsAll(tiles)){
+			emit(new IsEveryoneSynchro)
+			Thread.sleep(500)
+		}
+	}
+	
 	on Destroy{
-		
+		emit(new KillMessage)
 	}
 }

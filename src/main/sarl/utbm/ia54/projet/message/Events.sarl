@@ -7,10 +7,21 @@ event BroadcastMessage {
 	
 }
 
-event TilePlaced {
+//initialize messages
+event PlacedOn {
 	val id : UUID 
 	new (id : UUID){
 		this.id = id
+	}
+}
+
+//synchro messages
+event IsEveryoneSynchro
+
+event IsSynchro{
+	var tileId : UUID
+	new(tileId : UUID){
+		this.tileId = tileId
 	}
 }
 
@@ -33,13 +44,8 @@ event SynchroResponse{
 	}
 }
 
-event SynchroDone{
-	var id : UUID
-	new(id : UUID){
-		this.id = id
-	}
-}
 
+//leadership message
 event BecomeLeader{
 	var position : int
 	new (tileFinalPosition : int){
@@ -47,6 +53,8 @@ event BecomeLeader{
 	}
 }
 
+
+//exchange messages
 event  ExchangeMessage{
 	var idPlace : UUID
 	new (idPlace : UUID){
@@ -61,6 +69,7 @@ event ExchangeResponse{
 	}
 }
 
+//finding pat to blank tile message
 event FindBlank{
 	var src : UUID
 	new(src : UUID){
@@ -84,11 +93,9 @@ event PathMessage{
 	}
 }
 
+
 //TODO à supprimer quand le debug sera fini
 event sendFindBlank
- 
-
 event showPath
-
 event LogMessage
 event KillMessage

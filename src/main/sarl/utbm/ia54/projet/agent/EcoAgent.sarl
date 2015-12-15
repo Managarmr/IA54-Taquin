@@ -4,8 +4,8 @@ import java.util.UUID
 
 agent EcoAgent {
 	var idLinked : UUID
-	var pos : int
-	var puzzleSize : int
+	var pos : Integer
+	var puzzleSize : Integer
 	var state : SatisfactionState
 }
 enum SatisfactionState{

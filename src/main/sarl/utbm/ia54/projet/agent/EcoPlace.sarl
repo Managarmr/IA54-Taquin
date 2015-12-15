@@ -14,9 +14,7 @@ import utbm.ia54.projet.message.BlankGradient
 import utbm.ia54.projet.message.FindBlank
 import utbm.ia54.projet.message.KillMessage
 import utbm.ia54.projet.message.LogMessage
-import utbm.ia54.projet.message.SynchroDone
 import utbm.ia54.projet.message.SynchroResponse
-import utbm.ia54.projet.message.TilePlaced
 import utbm.ia54.projet.message.showPath
 
 /**
@@ -49,15 +47,8 @@ agent EcoPlace extends EcoAgent {
 		}
 	}
 	
-	on TilePlaced {
-		emit(new AskSynchroMessage(ID,pos), Scopes.addresses(defaultSpace.getAddress(occurrence.id)))
-		while(idLinked == null || tileObj == null){
-			Thread.sleep(500)
-			emit(new AskSynchroMessage(ID,pos), Scopes.addresses(defaultSpace.getAddress(occurrence.id)))
-		}
-		emit(new SynchroDone(this.ID))
-	}
 	
+	//synchro with tile
 	on AskSynchroMessage{
 		idLinked = occurrence.id
 		tileObj = occurrence.pos
@@ -68,6 +59,8 @@ agent EcoPlace extends EcoAgent {
 		idLinked = occurrence.id
 		tileObj = occurrence.pos
 	}
+	
+	//finding blank tile
 	on FindBlank {
 		//s'il s'agit de la case vide
 		if(tileObj == puzzleSize*puzzleSize){
@@ -95,12 +88,8 @@ agent EcoPlace extends EcoAgent {
 		}
 	}
 	
-	on showPath{
-		for(p as UUID : possiblePath){
-			println(p)
-		}
-	}
 	
+	//debug
 	//TODO à supprimer quand le débug sera fini
 	on LogMessage{
 		println("Place : id : " + ID + " | pos : " + pos + " | linkedId : " + idLinked + " | posObjLinked : " + tileObj)
@@ -108,5 +97,11 @@ agent EcoPlace extends EcoAgent {
 	
 	on KillMessage{
 		killMe
+	}
+	
+	on showPath{
+		for(p as UUID : possiblePath){
+			println(p)
+		}
 	}
 }

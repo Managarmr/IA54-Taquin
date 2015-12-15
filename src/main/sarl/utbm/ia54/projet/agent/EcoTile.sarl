@@ -9,8 +9,11 @@ import utbm.ia54.projet.message.BecomeLeader
 import utbm.ia54.projet.message.ExchangeMessage
 import utbm.ia54.projet.message.ExchangeResponse
 import utbm.ia54.projet.message.FindBlank
+import utbm.ia54.projet.message.IsEveryoneSynchro
+import utbm.ia54.projet.message.IsSynchro
 import utbm.ia54.projet.message.KillMessage
 import utbm.ia54.projet.message.LogMessage
+import utbm.ia54.projet.message.PlacedOn
 import utbm.ia54.projet.message.SynchroResponse
 import utbm.ia54.projet.message.sendFindBlank
 
@@ -20,13 +23,26 @@ agent EcoTile extends EcoAgent {
 	
 	var posFinale : Integer
 	var isLeader : boolean
+	var isSynchro : boolean
 	
 	on Initialize {
 		// Initialize parameters
 		posFinale = occurrence.parameters.get(0) as Integer
+		puzzleSize = occurrence.parameters.get(1) as Integer
+		isSynchro = false
 		isLeader = false
 		state = SatisfactionState.UNSATISFIED
-		puzzleSize = occurrence.parameters.get(1) as Integer
+	}
+	
+	//synchro with place
+	on PlacedOn {
+		while(posFinale === null){}
+		emit(new AskSynchroMessage(ID,pos), Scopes.addresses(defaultSpace.getAddress(occurrence.id)))
+		while(idLinked === null || pos === null){
+			Thread.sleep(500)
+			emit(new AskSynchroMessage(ID,posFinale), Scopes.addresses(defaultSpace.getAddress(occurrence.id)))
+		}
+		isSynchro = true
 	}
 	
 	on AskSynchroMessage {
@@ -41,12 +57,9 @@ agent EcoTile extends EcoAgent {
 		pos = occurrence.pos
 	}
 	
-	//TODO à supprimer quand le débug sera fini
-	on LogMessage{
-		println("Tile : id : " + ID + " | pos " + pos + " | idLinked : " + idLinked + " | posFinale : " + posFinale)
-//		killMe
-	}
 	
+	
+	//leading
 	on BecomeLeader{
 		if (occurrence.position == posFinale){
 			isLeader = true
@@ -69,6 +82,8 @@ agent EcoTile extends EcoAgent {
 		return yPos*puzzleSize+xPos +1
 	}
 	
+	
+	//exchange place with blank
 	on ExchangeMessage{
 		var evt = new ExchangeResponse(this.idLinked)
 		evt.source = defaultSpace.getAddress(this.ID)
@@ -81,6 +96,13 @@ agent EcoTile extends EcoAgent {
 		emit(new AskSynchroMessage(this.ID,this.posFinale), Scopes.addresses(defaultSpace.getAddress(occurrence.idPlace)))
 	}
 	
+	//debug
+	//TODO à supprimer quand le débug sera fini
+	on LogMessage{
+		println("Tile : id : " + ID + " | pos " + pos + " | idLinked : " + idLinked + " | posFinale : " + posFinale)
+//		killMe
+	}
+	
 	on KillMessage{
 		killMe
 	}
@@ -88,5 +110,12 @@ agent EcoTile extends EcoAgent {
 	on sendFindBlank{
 		emit(new FindBlank(this.ID))
 	}
+
+//test
+	on IsEveryoneSynchro{
+		if(isSynchro){
+			emit(new IsSynchro(this.ID))
+		}
+	}	
 	
 }
