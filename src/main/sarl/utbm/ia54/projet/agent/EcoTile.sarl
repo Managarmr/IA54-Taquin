@@ -13,6 +13,7 @@ import utbm.ia54.projet.message.ExchangeMessage
 import utbm.ia54.projet.message.ExchangeResponse
 import utbm.ia54.projet.message.FindBlank
 import utbm.ia54.projet.message.FindGoal
+import utbm.ia54.projet.message.FledMessage
 import utbm.ia54.projet.message.FleeAggressionMessage
 import utbm.ia54.projet.message.IsEveryoneSynchro
 import utbm.ia54.projet.message.IsSynchro
@@ -46,12 +47,7 @@ agent EcoTile extends EcoAgent {
 	//synchro with place
 	on PlacedOn {
 		while(posFinale === null){}
-		emit(new AskSynchroMessage(ID,pos), Scopes.addresses(defaultSpace.getAddress(occurrence.id)))
-		while(idLinked === null || pos === null){
-			Thread.sleep(500)
-			emit(new AskSynchroMessage(ID,posFinale), Scopes.addresses(defaultSpace.getAddress(occurrence.id)))
-		}
-		isSynchro = true
+		synchronizingWith(occurrence.id)
 	}
 	
 	on AskSynchroMessage {
@@ -71,6 +67,17 @@ agent EcoTile extends EcoAgent {
 			emit(new IsSynchro(this.ID))
 		}
 	}	
+	
+	def synchronizingWith(id : UUID){
+		idLinked = null
+		pos = null
+		emit(new AskSynchroMessage(ID,pos), Scopes.addresses(defaultSpace.getAddress(id)))
+		while(idLinked === null || pos === null){
+			Thread.sleep(500)
+			emit(new AskSynchroMessage(ID,posFinale), Scopes.addresses(defaultSpace.getAddress(id)))
+		}
+		isSynchro = true
+	}
 	
 	
 	
@@ -100,15 +107,22 @@ agent EcoTile extends EcoAgent {
 	
 	//exchange place with blank
 	on ExchangeMessage{
+		isSynchro = false
 		var evt = new ExchangeResponse(this.idLinked)
 		evt.source = defaultSpace.getAddress(this.ID)
 		emit(evt, Scopes.addresses(occurrence.source))
 		
-		emit(new AskSynchroMessage(this.ID,this.posFinale), Scopes.addresses(defaultSpace.getAddress(occurrence.idPlace)))
+		synchronizingWith(occurrence.idPlace)
+		if(aggresseurID !== null){
+			Thread.sleep(2000)
+			emit(new FledMessage(occurrence.idTile), Scopes.addresses(defaultSpace.getAddress(aggresseurID)))
+//			aggresseurID = null
+		}
 	}
 	
 	on ExchangeResponse{
-		emit(new AskSynchroMessage(this.ID,this.posFinale), Scopes.addresses(defaultSpace.getAddress(occurrence.idPlace)))
+		synchronizingWith(occurrence.idPlace)
+		
 	}
 	
 	//debug
@@ -158,7 +172,7 @@ on LeaderAggressionMessage{
 
 on AggressionMessage{
 	if(posFinale == puzzleSize*puzzleSize){
-		emit(new ExchangeMessage(this.idLinked),Scopes.addresses(defaultSpace.getAddress(occurrence.aggresseurID)))
+		emit(new ExchangeMessage(this.idLinked, this.ID),Scopes.addresses(defaultSpace.getAddress(occurrence.aggresseurID)))
 	}
 }
 on PathMessage{
@@ -170,15 +184,24 @@ on PathMessage{
 		var evt = new LeaderAggressionMessage
 		var target = path.remove(path.size-1)
 		evt.aggresseurID = this.ID
+		println(this.ID + " aggresse : " + target)
 		emit(evt,Scopes.addresses(defaultSpace.getAddress(target)))
 	}
 	else{
 		var evt = new FleeAggressionMessage
-		evt.aggresseurID = this.aggresseurID
+		evt.aggresseurID = this.ID
 		var target = path.remove(path.size-1)
 		evt.path = path
+		println(this.ID + " aggresse : " + target)
 		emit(evt,Scopes.addresses(defaultSpace.getAddress(target)))
 	}
+}
+
+on FledMessage{
+	println(this.ID + " Fled")
+	var evt = new AggressionMessage
+	evt.aggresseurID = this.ID
+	emit(evt, Scopes.addresses(defaultSpace.getAddress(occurrence.idBlankTile)))
 }
 
 	

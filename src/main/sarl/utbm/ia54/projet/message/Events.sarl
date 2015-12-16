@@ -57,8 +57,10 @@ event BecomeLeader{
 //exchange messages
 event  ExchangeMessage{
 	var idPlace : UUID
-	new (idPlace : UUID){
+	var idTile : UUID
+	new (idPlace : UUID, idTile : UUID){
 		this.idPlace = idPlace
+		this.idTile = idTile
 	}
 }
 
@@ -127,9 +129,9 @@ event FleeAggressionMessage extends AggressionMessage{
 event LeaderAggressionMessage extends AggressionMessage
 
 event FledMessage{
-	var blankID : UUID
-	new(blankID : UUID){
-		this.blankID = blankID
+	var idBlankTile : UUID
+	new(idBlankTile : UUID){
+		this.idBlankTile = idBlankTile
 	}
 }
 
