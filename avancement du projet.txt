@@ -6,12 +6,12 @@ Fait :
 	échange de place de la tuile blanche avec une tuile adjacente
 	déplacement d'une tuile == échange de place avec la tuile blanche
 	recherche du chemin vers l'objectif
+	réaction à une aggression
 
 A tester : 
 	désignation du leader
 	
 En cours : 
-	réaction à une aggression
 
 A faire : 
 	recherche de satisfaction (aggression d'une autre tuile)

@@ -15,7 +15,6 @@ import utbm.ia54.projet.message.FindBlank
 import utbm.ia54.projet.message.FindGoal
 import utbm.ia54.projet.message.GoalGradient
 import utbm.ia54.projet.message.KillMessage
-import utbm.ia54.projet.message.LogMessage
 import utbm.ia54.projet.message.PathMessage
 import utbm.ia54.projet.message.SynchroResponse
 import utbm.ia54.projet.message.showPath
@@ -27,10 +26,12 @@ import utbm.ia54.projet.message.showPath
 agent EcoPlace extends EcoAgent {
 	uses DefaultContextInteractions, Lifecycle,Behaviors
 	
+	var pos : Integer
 	var space : OpenEventSpace 
 	var spaceUUID : UUID
 	var tileObj : Integer
 	var possiblePath = new ArrayList<UUID>
+	var tileIsAggressing = false
 	
 	on Initialize {
 		// Initialize parameters
@@ -55,12 +56,9 @@ agent EcoPlace extends EcoAgent {
 	on AskSynchroMessage{
 		idLinked = occurrence.id
 		tileObj = occurrence.pos
+		tileIsAggressing = false
+//		while(this.pos === null){}
 		emit(new SynchroResponse(ID,pos),Scopes.addresses(defaultSpace.getAddress(idLinked)))
-	}
-	
-	on SynchroResponse{
-		idLinked = occurrence.id
-		tileObj = occurrence.pos
 	}
 	
 	//finding blank tile
@@ -75,21 +73,24 @@ agent EcoPlace extends EcoAgent {
 	}
 	
 	on BlankGradient{
-		if(occurrence.askedBy != idLinked){
-			if(!occurrence.path.contains(idLinked)){
-				var path = new ArrayList<UUID>
-				path.addAll(occurrence.path)
-				path.add(idLinked)
-				space.emit(new BlankGradient(occurrence.askedBy, path))
-			}
-		} else {
-			if(possiblePath.size == 0){
-				possiblePath = occurrence.path 
-				Thread.sleep(500)
-				emit(new PathMessage(possiblePath.clone as ArrayList<UUID>), Scopes.addresses(defaultSpace.getAddress(idLinked)))
-			}
-			else if (possiblePath.size > occurrence.path.size){
-				possiblePath = occurrence.path
+		if(!tileIsAggressing){
+			if(occurrence.askedBy != idLinked){
+				if(!occurrence.path.contains(idLinked)){
+					var path = new ArrayList<UUID>
+					path.addAll(occurrence.path)
+					path.add(idLinked)
+					space.emit(new BlankGradient(occurrence.askedBy, path))
+				}
+			} else {
+				if(possiblePath.size == 0){
+					possiblePath = occurrence.path 
+					Thread.sleep(500)
+					emit(new PathMessage(possiblePath.clone as ArrayList<UUID>), Scopes.addresses(defaultSpace.getAddress(idLinked)))
+					tileIsAggressing = true
+				}
+				else if (possiblePath.size > occurrence.path.size){
+					possiblePath = occurrence.path
+				}
 			}
 		}
 	}
@@ -109,28 +110,33 @@ agent EcoPlace extends EcoAgent {
 	}
 	
 	on GoalGradient{
-		if(occurrence.askedBy != idLinked){
-			if(!occurrence.path.contains(idLinked)){
-				var path = new ArrayList<UUID>
-				path.addAll(occurrence.path)
-				path.add(idLinked)
-				space.emit(new GoalGradient(occurrence.askedBy, path))
-			}
-		} else {
-			if(possiblePath.size == 0){
-				possiblePath = occurrence.path 
-			}
-			else if (possiblePath.size > occurrence.path.size){
-				possiblePath = occurrence.path
+		if(!tileIsAggressing){
+			if(occurrence.askedBy != idLinked){
+				if(!occurrence.path.contains(idLinked)){
+					var path = new ArrayList<UUID>
+					path.addAll(occurrence.path)
+					path.add(idLinked)
+					space.emit(new GoalGradient(occurrence.askedBy, path))
+				}
+			} else {
+				if(possiblePath.size == 0){
+					possiblePath = occurrence.path 
+					Thread.sleep(500)
+					emit(new PathMessage(possiblePath.clone as ArrayList<UUID>), Scopes.addresses(defaultSpace.getAddress(idLinked)))
+					tileIsAggressing = true
+				}
+				else if (possiblePath.size > occurrence.path.size){
+					possiblePath = occurrence.path
+				}
 			}
 		}
 	}
 	
 	//debug
 	//TODO à supprimer quand le débug sera fini
-	on LogMessage{
-		println("Place : id : " + ID + " | pos : " + pos + " | linkedId : " + idLinked + " | posObjLinked : " + tileObj)
-	}
+//	on LogMessage{
+//		println("Place : id : " + ID + " | pos : " + pos + " | linkedId : " + idLinked + " | posObjLinked : " + tileObj)
+//	}
 	
 	on KillMessage{
 		killMe

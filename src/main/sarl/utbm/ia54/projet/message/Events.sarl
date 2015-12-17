@@ -117,7 +117,7 @@ event PathMessage{
 	}
 }
 
-//test
+//Aggression
 event AggressionMessage{
 	var aggresseurID : UUID
 }
@@ -134,6 +134,8 @@ event FledMessage{
 		this.idBlankTile = idBlankTile
 	}
 }
+
+event MoveDone
 
 
 

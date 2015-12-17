@@ -20,6 +20,7 @@ import utbm.ia54.projet.message.IsSynchro
 import utbm.ia54.projet.message.KillMessage
 import utbm.ia54.projet.message.LeaderAggressionMessage
 import utbm.ia54.projet.message.LogMessage
+import utbm.ia54.projet.message.MoveDone
 import utbm.ia54.projet.message.PathMessage
 import utbm.ia54.projet.message.PlacedOn
 import utbm.ia54.projet.message.SynchroResponse
@@ -32,15 +33,15 @@ agent EcoTile extends EcoAgent {
 	uses Lifecycle, DefaultContextInteractions
 	
 	var posFinale : Integer
-	var isLeader : boolean
-	var isSynchro : boolean
+	var pos : Integer
+	var isLeader = false
+	var isSynchro = false
+	var isAggressing = false
 	
 	on Initialize {
 		// Initialize parameters
 		posFinale = occurrence.parameters.get(0) as Integer
 		puzzleSize = occurrence.parameters.get(1) as Integer
-		isSynchro = false
-		isLeader = false
 		state = SatisfactionState.UNSATISFIED
 	}
 	
@@ -50,16 +51,10 @@ agent EcoTile extends EcoAgent {
 		synchronizingWith(occurrence.id)
 	}
 	
-	on AskSynchroMessage {
-		idLinked = occurrence.id
-		pos = occurrence.pos
-		emit(new SynchroResponse(ID,posFinale),Scopes.addresses(defaultSpace.getAddress(idLinked)))
-		
-	}
-	
 	on SynchroResponse{
 		idLinked = occurrence.id
 		pos = occurrence.pos
+		isSynchro = true
 	}
 	
 	on IsEveryoneSynchro{
@@ -71,24 +66,19 @@ agent EcoTile extends EcoAgent {
 	def synchronizingWith(id : UUID){
 		idLinked = null
 		pos = null
-		emit(new AskSynchroMessage(ID,pos), Scopes.addresses(defaultSpace.getAddress(id)))
-		while(idLinked === null || pos === null){
+		emit(new AskSynchroMessage(ID,posFinale), Scopes.addresses(defaultSpace.getAddress(id)))
+		while(!isSynchro){
 			Thread.sleep(500)
 			emit(new AskSynchroMessage(ID,posFinale), Scopes.addresses(defaultSpace.getAddress(id)))
 		}
-		isSynchro = true
 	}
-	
-	
-	
+		
 	//leading
 	on BecomeLeader{
 		if (occurrence.position == posFinale){
 			isLeader = true
 		}
-	}
-	
-	
+	}	
 	
 	def computeNextLeader : int{
 		var xPos = (posFinale%puzzleSize) -1
@@ -104,7 +94,6 @@ agent EcoTile extends EcoAgent {
 		return yPos*puzzleSize+xPos +1
 	}
 	
-	
 	//exchange place with blank
 	on ExchangeMessage{
 		isSynchro = false
@@ -113,10 +102,16 @@ agent EcoTile extends EcoAgent {
 		emit(evt, Scopes.addresses(occurrence.source))
 		
 		synchronizingWith(occurrence.idPlace)
+		while(!isSynchro){}
 		if(aggresseurID !== null){
-			Thread.sleep(2000)
+//			Thread.sleep(2000)
+			println(this.posFinale + " fled in " + this.pos)
 			emit(new FledMessage(occurrence.idTile), Scopes.addresses(defaultSpace.getAddress(aggresseurID)))
-//			aggresseurID = null
+			aggresseurID = null
+			isAggressing = false
+		}
+		else{
+			emit(new MoveDone)
 		}
 	}
 	
@@ -128,7 +123,7 @@ agent EcoTile extends EcoAgent {
 	//debug
 	//TODO à supprimer quand le débug sera fini
 	on LogMessage{
-		println("Tile : id : " + ID + " | posFinale : " + posFinale + " | pos " + pos)
+		println("Tile : id : posFinale : " + posFinale + " | pos " + pos + " | ID Tile : " + ID)
 //		killMe
 	}
 	
@@ -152,14 +147,16 @@ agent EcoTile extends EcoAgent {
 
 //test
 var aggresseurID : UUID
+
 on FleeAggressionMessage{
 	if(posFinale!=this.puzzleSize*this.puzzleSize){
 		this.aggresseurID = occurrence.aggresseurID
 		var path = occurrence.path.clone as ArrayList<UUID>
+		var target = path.remove(path.size-1)
 		var evt = new FleeAggressionMessage
 		evt.aggresseurID = this.ID
 		evt.path = path
-		emit(evt, Scopes.addresses(defaultSpace.getAddress(path.remove(path.size-1))))		
+		emit(evt, Scopes.addresses(defaultSpace.getAddress(target)))		
 	}
 }
 
@@ -172,33 +169,38 @@ on LeaderAggressionMessage{
 
 on AggressionMessage{
 	if(posFinale == puzzleSize*puzzleSize){
+		while(!isSynchro){}
 		emit(new ExchangeMessage(this.idLinked, this.ID),Scopes.addresses(defaultSpace.getAddress(occurrence.aggresseurID)))
 	}
 }
+
 on PathMessage{
-	var path = occurrence.path.clone as ArrayList<UUID>
-	for(p as UUID : path){
-		println(p)
-	}
-	if(aggresseurID === null){
-		var evt = new LeaderAggressionMessage
-		var target = path.remove(path.size-1)
-		evt.aggresseurID = this.ID
-		println(this.ID + " aggresse : " + target)
-		emit(evt,Scopes.addresses(defaultSpace.getAddress(target)))
-	}
-	else{
-		var evt = new FleeAggressionMessage
-		evt.aggresseurID = this.ID
-		var target = path.remove(path.size-1)
-		evt.path = path
-		println(this.ID + " aggresse : " + target)
-		emit(evt,Scopes.addresses(defaultSpace.getAddress(target)))
+	if(!isAggressing){
+		var path = occurrence.path.clone as ArrayList<UUID>
+		for(p as UUID : path){
+			println(p)
+		}
+		if(aggresseurID === null){
+			var evt = new LeaderAggressionMessage
+			var target = path.remove(path.size-1)
+			evt.aggresseurID = this.ID
+			println(this.posFinale + " aggresse : " + target)
+			isAggressing = true
+			emit(evt,Scopes.addresses(defaultSpace.getAddress(target)))
+		}
+		else{
+			var evt = new FleeAggressionMessage
+			evt.aggresseurID = this.ID
+			var target = path.remove(path.size-1)
+			evt.path = path
+			isAggressing = true
+			println(this.posFinale + " aggresse : " + target)
+			emit(evt,Scopes.addresses(defaultSpace.getAddress(target)))
+		}
 	}
 }
 
 on FledMessage{
-	println(this.ID + " Fled")
 	var evt = new AggressionMessage
 	evt.aggresseurID = this.ID
 	emit(evt, Scopes.addresses(defaultSpace.getAddress(occurrence.idBlankTile)))

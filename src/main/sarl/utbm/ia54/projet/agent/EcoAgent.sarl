@@ -4,7 +4,6 @@ import java.util.UUID
 
 agent EcoAgent {
 	var idLinked : UUID
-	var pos : Integer
 	var puzzleSize : Integer
 	var state : SatisfactionState
 }
