@@ -3,15 +3,11 @@ package utbm.ia54.projet.message
 import java.util.ArrayList
 import java.util.UUID
 
-event BroadcastMessage {
-	
-}
-
 //initialize messages
 event PlacedOn {
-	val id : UUID 
+	var idPlace : UUID 
 	new (id : UUID){
-		this.id = id
+		this.idPlace = id
 	}
 }
 
@@ -26,30 +22,30 @@ event IsSynchro{
 }
 
 event AskSynchroMessage{
-	val id : UUID
-	val pos : Integer
+	val idTile : UUID
+	val tileGoal : Integer
 	
 	new (id : UUID, pos : Integer) {
-		this.id = id
-		this.pos = pos
+		this.idTile = id
+		this.tileGoal = pos
 	}	
 }
 
 event SynchroResponse{
-	val id : UUID
-	val pos : Integer
+	val idPlace : UUID
+	val position : Integer
 	new(id : UUID,pos : Integer){
-		this.id = id
-		this.pos = pos
+		this.idPlace = id
+		this.position = pos
 	}
 }
 
 
 //leadership message
 event BecomeLeader{
-	var position : int
-	new (tileFinalPosition : int){
-		this.position = tileFinalPosition;
+	var tileGoal : int
+	new (tileGoal : int){
+		this.tileGoal = tileGoal;
 	}
 }
 
@@ -119,14 +115,14 @@ event PathMessage{
 
 //Aggression
 event AggressionMessage{
-	var aggresseurID : UUID
+	var aggressorID : UUID
 }
+
+event LeaderAggressionMessage extends AggressionMessage
 
 event FleeAggressionMessage extends AggressionMessage{
 	var path : ArrayList<UUID>
 }
-
-event LeaderAggressionMessage extends AggressionMessage
 
 event FledMessage{
 	var idBlankTile : UUID

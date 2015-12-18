@@ -3,9 +3,11 @@ package utbm.ia54.projet.^agent
 import java.util.UUID
 
 agent EcoAgent {
+	var position : Integer
+	var tileGoal : Integer
 	var idLinked : UUID
 	var puzzleSize : Integer
-	var state : SatisfactionState
+	var state = SatisfactionState.UNSATISFIED
 }
 enum SatisfactionState{
 		UNSATISFIED,

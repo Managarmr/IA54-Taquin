@@ -26,16 +26,14 @@ import utbm.ia54.projet.message.showPath
 agent EcoPlace extends EcoAgent {
 	uses DefaultContextInteractions, Lifecycle,Behaviors
 	
-	var pos : Integer
 	var space : OpenEventSpace 
 	var spaceUUID : UUID
-	var tileObj : Integer
 	var possiblePath = new ArrayList<UUID>
 	var tileIsAggressing = false
 	
 	on Initialize {
 		// Initialize parameters
-		pos = occurrence.parameters.get(0) as Integer
+		position = occurrence.parameters.get(0) as Integer
 		puzzleSize = occurrence.parameters.get(1) as Integer
 		spaceUUID = occurrence.parameters.get(2) as UUID
 		
@@ -54,18 +52,18 @@ agent EcoPlace extends EcoAgent {
 	
 	//synchro with tile
 	on AskSynchroMessage{
-		idLinked = occurrence.id
-		tileObj = occurrence.pos
+		idLinked = occurrence.idTile
+		tileGoal = occurrence.tileGoal
 		tileIsAggressing = false
-//		while(this.pos === null){}
-		emit(new SynchroResponse(ID,pos),Scopes.addresses(defaultSpace.getAddress(idLinked)))
+		emit(new SynchroResponse(ID,position),Scopes.addresses(defaultSpace.getAddress(idLinked)))
 	}
 	
-	//finding blank tile
+	//path finding
+	//finding path to blank tile
 	on FindBlank {
 		possiblePath.clear
 		//s'il s'agit de la case vide
-		if(tileObj == puzzleSize*puzzleSize){
+		if(tileGoal == puzzleSize*puzzleSize){
 			var path = new ArrayList<UUID>
 			path.add(this.idLinked)
 			space.emit(new BlankGradient(occurrence.src,path))
@@ -95,12 +93,12 @@ agent EcoPlace extends EcoAgent {
 		}
 	}
 	
-	//finding goal place
+	//finding path to goal place
 	on FindGoal {
 		possiblePath.clear
-		if(tileObj != occurrence.goal){
+		if(tileGoal != occurrence.goal){
 			//s'il s'agit de la case vide
-			if(pos == occurrence.goal){
+			if(position == occurrence.goal){
 				var path = new ArrayList<UUID>
 				path.add(this.idLinked)
 				space.emit(new BlankGradient(occurrence.src,path))
@@ -137,7 +135,6 @@ agent EcoPlace extends EcoAgent {
 //	on LogMessage{
 //		println("Place : id : " + ID + " | pos : " + pos + " | linkedId : " + idLinked + " | posObjLinked : " + tileObj)
 //	}
-	
 	on KillMessage{
 		killMe
 	}
