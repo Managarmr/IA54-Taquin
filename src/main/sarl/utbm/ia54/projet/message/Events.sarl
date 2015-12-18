@@ -15,7 +15,7 @@ event PlacedOn {
 event IsEveryoneSynchro
 
 event IsSynchro{
-	var tileId : UUID
+	val tileId : UUID
 	new(tileId : UUID){
 		this.tileId = tileId
 	}
@@ -24,10 +24,12 @@ event IsSynchro{
 event AskSynchroMessage{
 	val idTile : UUID
 	val tileGoal : Integer
+	val isLeader : boolean
 	
-	new (id : UUID, pos : Integer) {
+	new (id : UUID, pos : Integer, isLeader : boolean) {
 		this.idTile = id
 		this.tileGoal = pos
+		this.isLeader = isLeader
 	}	
 }
 
@@ -43,7 +45,7 @@ event SynchroResponse{
 
 //leadership message
 event BecomeLeader{
-	var tileGoal : int
+	val tileGoal : int
 	new (tileGoal : int){
 		this.tileGoal = tileGoal;
 	}
@@ -52,8 +54,8 @@ event BecomeLeader{
 
 //exchange messages
 event  ExchangeMessage{
-	var idPlace : UUID
-	var idTile : UUID
+	val idPlace : UUID
+	val idTile : UUID
 	new (idPlace : UUID, idTile : UUID){
 		this.idPlace = idPlace
 		this.idTile = idTile
@@ -61,7 +63,7 @@ event  ExchangeMessage{
 }
 
 event ExchangeResponse{
-	var idPlace : UUID
+	val idPlace : UUID
 	new (idPlace : UUID){
 		this.idPlace = idPlace
 	}
@@ -69,15 +71,15 @@ event ExchangeResponse{
 
 //finding path to blank tile messages
 event FindBlank{
-	var src : UUID
+	val src : UUID
 	new(src : UUID){
 		this.src = src
 	}
 }
 
 event BlankGradient{
-	var askedBy : UUID
-	var path : ArrayList<UUID>
+	val askedBy : UUID
+	val path : ArrayList<UUID>
 	new(askedBy : UUID, path : ArrayList<UUID>){
 		this.askedBy = askedBy
 		this.path = path
@@ -86,8 +88,8 @@ event BlankGradient{
 
 
 event FindGoal{
-	var src : UUID
-	var goal : Integer
+	val src : UUID
+	val goal : Integer
 	new(src : UUID, goal : Integer){
 		this.src = src
 		this.goal = goal
@@ -96,8 +98,8 @@ event FindGoal{
 
 //finding path to goal messages
 event GoalGradient{
-	var askedBy : UUID
-	var path : ArrayList<UUID>
+	val askedBy : UUID
+	val path : ArrayList<UUID>
 	new(askedBy : UUID, path : ArrayList<UUID>){
 		this.askedBy = askedBy
 		this.path = path
@@ -107,7 +109,7 @@ event GoalGradient{
 
 //general
 event PathMessage{
-	var path : ArrayList<UUID>
+	val path : ArrayList<UUID>
 	new(path : ArrayList<UUID>){
 		this.path = path
 	}
@@ -125,7 +127,7 @@ event FleeAggressionMessage extends AggressionMessage{
 }
 
 event FledMessage{
-	var idBlankTile : UUID
+	val idBlankTile : UUID
 	new(idBlankTile : UUID){
 		this.idBlankTile = idBlankTile
 	}
@@ -144,7 +146,7 @@ event LogMessage
 event KillMessage
 
 event sendAggro{
-	var target : UUID
+	val target : UUID
 	new(target : UUID){
 		this.target = target
 	}

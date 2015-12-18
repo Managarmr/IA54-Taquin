@@ -104,9 +104,10 @@ agent EcoNPuzzle {
 	
 	def synchro{
 		synchroTiles.clear
-		emit(new IsEveryoneSynchro)
+		var evt = new IsEveryoneSynchro
+		emit(evt)
 		while(!synchroTiles.containsAll(tiles)){
-			emit(new IsEveryoneSynchro)
+			emit(evt)
 			Thread.sleep(500)
 		}
 		println("synchronizing done")

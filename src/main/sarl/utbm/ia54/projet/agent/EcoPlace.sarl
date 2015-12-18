@@ -55,11 +55,8 @@ agent EcoPlace extends EcoAgent {
 		idLinked = occurrence.idTile
 		tileGoal = occurrence.tileGoal
 		tileIsAggressing = false
-		if(tileGoal == position ){
-			state = SatisfactionState.SATISFIED
-		}
-		else {
-			state = SatisfactionState.UNSATISFIED
+		if(occurrence.isLeader && tileGoal == position){
+			this.state = SatisfactionState.SATISFIED
 		}
 		emit(new SynchroResponse(ID,position),Scopes.addresses(defaultSpace.getAddress(idLinked)))
 	}
@@ -103,11 +100,11 @@ agent EcoPlace extends EcoAgent {
 	on FindGoal {
 		possiblePath.clear
 		if(tileGoal != occurrence.goal){
-			//s'il s'agit de la case vide
+			//s'il s'agit de la case recherchée
 			if(position == occurrence.goal){
 				var path = new ArrayList<UUID>
 				path.add(this.idLinked)
-				space.emit(new BlankGradient(occurrence.src,path))
+				space.emit(new GoalGradient(occurrence.src,path))
 			}
 			
 		}

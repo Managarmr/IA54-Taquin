@@ -60,16 +60,11 @@ agent EcoTile extends EcoAgent {
 //				task.cancel
 //			}
 //		]
-		emit(new AskSynchroMessage(ID,tileGoal), Scopes.addresses(defaultSpace.getAddress(id)))
+		var evt = new AskSynchroMessage(ID,tileGoal, isLeader)
+		emit(evt, Scopes.addresses(defaultSpace.getAddress(id)))
 		while(!isSynchro){
-			emit(new AskSynchroMessage(ID,tileGoal), Scopes.addresses(defaultSpace.getAddress(id)))
+			emit(evt, Scopes.addresses(defaultSpace.getAddress(id)))
 			Thread.sleep(100)
-		}
-		if(position == tileGoal){
-			state = SatisfactionState.SATISFIED
-		}
-		else{
-			state = SatisfactionState.UNSATISFIED
 		}
 	}
 	
@@ -98,7 +93,7 @@ agent EcoTile extends EcoAgent {
 			aggressorID = null
 			isAggressing = false
 		}
-		else{
+		if(isLeader){
 			emit(new MoveDone)
 			live
 		}
