@@ -65,6 +65,12 @@ agent EcoTile extends EcoAgent {
 			emit(new AskSynchroMessage(ID,tileGoal), Scopes.addresses(defaultSpace.getAddress(id)))
 			Thread.sleep(100)
 		}
+		if(position == tileGoal){
+			state = SatisfactionState.SATISFIED
+		}
+		else{
+			state = SatisfactionState.UNSATISFIED
+		}
 	}
 	
 	on SynchroResponse{
@@ -94,6 +100,7 @@ agent EcoTile extends EcoAgent {
 		}
 		else{
 			emit(new MoveDone)
+			live
 		}
 	}
 	
@@ -102,24 +109,23 @@ agent EcoTile extends EcoAgent {
 	}
 
 	//aggression
-	def aggress(path : ArrayList<UUID>){
-		if(aggressorID === null){
-			var evt = new LeaderAggressionMessage
-			var target = path.remove(path.size-1)
-			evt.aggressorID = this.ID
-			println(this.tileGoal + " aggress : " + target)
-			isAggressing = true
-			emit(evt,Scopes.addresses(defaultSpace.getAddress(target)))
-		}
-		else{
-			var evt = new FleeAggressionMessage
-			evt.aggressorID = this.ID
-			var target = path.remove(path.size-1)
-			evt.path = path
-			isAggressing = true
-			println(this.tileGoal + " aggress : " + target)
-			emit(evt,Scopes.addresses(defaultSpace.getAddress(target)))
-		}
+	def aggressForGoal(path : ArrayList<UUID>){
+		var evt = new LeaderAggressionMessage
+		var target = path.remove(path.size-1)
+		evt.aggressorID = this.ID
+		println(this.tileGoal + " aggress : " + target)
+		isAggressing = true
+		emit(evt,Scopes.addresses(defaultSpace.getAddress(target)))
+	}
+	
+	def aggressForBlank(path : ArrayList<UUID>){
+		var evt = new FleeAggressionMessage
+		evt.aggressorID = this.ID
+		var target = path.remove(path.size-1)
+		evt.path = path
+		isAggressing = true
+		println(this.tileGoal + " aggress : " + target)
+		emit(evt,Scopes.addresses(defaultSpace.getAddress(target)))
 	}
 	
 	on AggressionMessage[isBlankTile]{
@@ -146,36 +152,72 @@ agent EcoTile extends EcoAgent {
 		var evt = new AggressionMessage
 		evt.aggressorID = this.ID
 		emit(evt, Scopes.addresses(defaultSpace.getAddress(occurrence.idBlankTile)))
+		
 	}
 
 	//pathFinding
-	on PathMessage[!isAggressing]{
+	on PathMessage[!isAggressing && isLeader]{
 		var path = occurrence.path.clone as ArrayList<UUID>
 		for(p as UUID : path){
 			println(p)
 		}
-		aggress(path)
+		aggressForGoal(path)
+	}
+	
+	on PathMessage[!isAggressing && !isLeader]{
+		var path = occurrence.path.clone as ArrayList<UUID>
+		for(p as UUID : path){
+			println(p)
+		}
+		aggressForBlank(path)
 	}
 	
 	//leading
 	on BecomeLeader{
 		if (occurrence.tileGoal == tileGoal){
 			isLeader = true
+			live
 		}
 	}	
 	
+	def live{
+		if(isLeader){
+			if(tileGoal != position){
+				emit(new FindGoal(this.ID, this.tileGoal))
+			}
+			else{
+				state = SatisfactionState.SATISFIED
+				println(this.tileGoal + " is Satisfied")
+				isLeader = false
+				var nextLeader = computeNextLeader
+				if(nextLeader != 0){
+					emit(new BecomeLeader(nextLeader))
+				}
+			}
+		}
+	}
+	
 	def computeNextLeader : int{
-		var xPos = (tileGoal%puzzleSize) -1
-		var yPos = (tileGoal-xPos-1)/puzzleSize
-		// on est en train de placer les tuiles de la ligne supérieure
-		if(xPos > yPos){
-			xPos--;
+		if(!isBlankTile){
+			var xPos = (tileGoal-1)%puzzleSize
+			var yPos = (tileGoal-xPos-1)/puzzleSize
+			// on est en train de placer les tuiles de la ligne supérieure
+			if(xPos > yPos){
+				xPos--;
+			}
+			// on place les tuiles de la colone gauche
+			else if(yPos < puzzleSize-1){
+				yPos++;
+			}
+			else {
+				yPos = xPos+1
+				xPos = puzzleSize-1
+			}
+			return yPos*puzzleSize+xPos +1
 		}
-		// on place les tuiles de la colone gauche
-		else {
-			yPos++;
+		else{
+			return 0
 		}
-		return yPos*puzzleSize+xPos +1
 	}
 	
 	//debug

@@ -11,13 +11,13 @@ import io.sarl.util.Scopes
 import java.util.ArrayList
 import java.util.HashSet
 import java.util.UUID
+import utbm.ia54.projet.message.BecomeLeader
 import utbm.ia54.projet.message.IsEveryoneSynchro
 import utbm.ia54.projet.message.IsSynchro
 import utbm.ia54.projet.message.KillMessage
 import utbm.ia54.projet.message.LogMessage
 import utbm.ia54.projet.message.MoveDone
 import utbm.ia54.projet.message.PlacedOn
-import utbm.ia54.projet.message.sendFindGoal
 
 agent EcoNPuzzle {
 	
@@ -37,9 +37,10 @@ agent EcoNPuzzle {
 		
 		emit(new LogMessage)
 		
+		emit(new BecomeLeader(size))
 //		emit(new sendAggro(tiles.get(3)),Scopes.addresses(defaultSpace.getAddress(tiles.get(2))))
 //		emit(new sendFindBlank, Scopes.addresses(defaultSpace.getAddress(tiles.get(0))))
-		emit(new sendFindGoal, Scopes.addresses(defaultSpace.getAddress(tiles.get(0))))
+//		emit(new sendFindGoal, Scopes.addresses(defaultSpace.getAddress(tiles.get(0))))
 
 //		// Stop creating
 //		killMe
@@ -91,7 +92,7 @@ agent EcoNPuzzle {
 	
 	on MoveDone{
 		emit(new LogMessage)
-		killMe
+//		killMe
 	}
 	
 	//synchronize
