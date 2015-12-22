@@ -1,154 +1,171 @@
-//package utbm.ia54.projet.^agent
-//
-//import io.sarl.core.Behaviors
-//import io.sarl.core.DefaultContextInteractions
-//import io.sarl.core.Initialize
-//import io.sarl.core.Lifecycle
-//import io.sarl.util.OpenEventSpace
-//import io.sarl.util.OpenEventSpaceSpecification
-//import io.sarl.util.Scopes
-//import java.util.ArrayList
-//import java.util.UUID
-//import utbm.ia54.projet.message.AskSynchroMessage
-//import utbm.ia54.projet.message.BlankGradient
-//import utbm.ia54.projet.message.FindBlank
-//import utbm.ia54.projet.message.FindGoal
-//import utbm.ia54.projet.message.GoalGradient
-//import utbm.ia54.projet.message.KillMessage
-//import utbm.ia54.projet.message.PathMessage
-//import utbm.ia54.projet.message.SynchroResponse
-//import utbm.ia54.projet.message.showPath
-//
-///**
-// * @author Lucas
-// *
-// */
-//agent EcoPlace extends EcoAgent {
-//	uses DefaultContextInteractions, Lifecycle,Behaviors
-//	
-//	var space : OpenEventSpace 
-//	var spaceUUID : UUID
-//	var possiblePath = new ArrayList<UUID>
-//	var tileIsAggressing = false
-//	
-//	on Initialize {
-//		// Initialize parameters
-//		position = occurrence.parameters.get(0) as Integer
-//		puzzleSize = occurrence.parameters.get(1) as Integer
-//		spaceUUID = occurrence.parameters.get(2) as UUID
-//		
-//		space = defaultContext.getOrCreateSpaceWithID(
-//			spaceUUID,
-//			typeof(OpenEventSpaceSpecification)
-//		);
-//		for(s as UUID : occurrence.parameters.get(3) as ArrayList<UUID>){
-//			defaultContext.getOrCreateSpaceWithID(
-//				s,
-//				typeof(OpenEventSpaceSpecification)
-//			).register(asEventListener())
-//		}
-//	}
-//	
-//	
-//	//synchro with tile
-//	on AskSynchroMessage{
-//		idLinked = occurrence.idTile
-//		tileGoal = occurrence.tileGoal
-//		tileIsAggressing = false
-//		if(occurrence.isLeader && tileGoal == position){
-//			this.state = SatisfactionState.SATISFIED
-//		}
-//		emit(new SynchroResponse(ID,position),Scopes.addresses(defaultSpace.getAddress(idLinked)))
-//	}
-//	
-//	//path finding
-//	//finding path to blank tile
-//	on FindBlank {
-//		possiblePath.clear
-//		//s'il s'agit de la case vide
-//		if(tileGoal == puzzleSize*puzzleSize){
-//			var path = new ArrayList<UUID>
-//			path.add(this.idLinked)
-//			space.emit(new BlankGradient(occurrence.src,path))
-//		}
-//	}
-//	
-//	on BlankGradient{
-//		if(!tileIsAggressing && state == SatisfactionState.UNSATISFIED){
-//			if(occurrence.askedBy != idLinked){
-//				if(!occurrence.path.contains(idLinked)){
-//					var path = new ArrayList<UUID>
-//					path.addAll(occurrence.path)
-//					path.add(idLinked)
-//					space.emit(new BlankGradient(occurrence.askedBy, path))
-//				}
-//			} else {
-//				if(possiblePath.size == 0){
-//					possiblePath = occurrence.path 
-//					Thread.sleep(500)
-//					emit(new PathMessage(possiblePath.clone as ArrayList<UUID>), Scopes.addresses(defaultSpace.getAddress(idLinked)))
-//					tileIsAggressing = true
-//				}
-//				else if (possiblePath.size > occurrence.path.size){
-//					possiblePath = occurrence.path
-//				}
-//			}
-//		}
-//	}
-//	
-//	//finding path to goal place
-//	on FindGoal {
-//		possiblePath.clear
-//		if(tileGoal != occurrence.goal){
-//			//s'il s'agit de la case recherchée
-//			if(position == occurrence.goal){
-//				var path = new ArrayList<UUID>
-//				path.add(this.idLinked)
-//				space.emit(new GoalGradient(occurrence.src,path))
-//			}
-//			
-//		}
-//	}
-//	
-//	on GoalGradient{
-//		if(!tileIsAggressing && state == SatisfactionState.UNSATISFIED){
-//			if(occurrence.askedBy != idLinked){
-//				if(!occurrence.path.contains(idLinked)){
-//					var path = new ArrayList<UUID>
-//					path.addAll(occurrence.path)
-//					path.add(idLinked)
-//					space.emit(new GoalGradient(occurrence.askedBy, path))
-//				}
-//			} else {
-//				if(possiblePath.size == 0){
-//					possiblePath = occurrence.path 
-//					Thread.sleep(500)
-//					emit(new PathMessage(possiblePath.clone as ArrayList<UUID>), Scopes.addresses(defaultSpace.getAddress(idLinked)))
-//					tileIsAggressing = true
-//				}
-//				else if (possiblePath.size > occurrence.path.size){
-//					possiblePath = occurrence.path
-//				}
-//			}
-//		}
-//	}
-//	
-//	//debug
-//	//TODO à supprimer quand le débug sera fini
-////	on LogMessage{
-////		println("Place : id : " + ID + " | pos : " + pos + " | linkedId : " + idLinked + " | posObjLinked : " + tileObj)
-////	}
-//	on KillMessage{
-//		killMe
-//	}
-//	
-//	on showPath{
-//		for(p as UUID : possiblePath){
-//			println(p)
-//		}
-//	}
-//	
-//	//test
-//	
-//	
-//}
+package utbm.ia54.projet.^agent
+
+import io.sarl.core.Behaviors
+import io.sarl.core.DefaultContextInteractions
+import io.sarl.core.Initialize
+import io.sarl.core.Lifecycle
+import io.sarl.util.OpenEventSpace
+import io.sarl.util.OpenEventSpaceSpecification
+import io.sarl.util.Scopes
+import java.util.ArrayList
+import java.util.UUID
+import utbm.ia54.projet.message.AggressionMessage
+import utbm.ia54.projet.message.AskSynchroMessage
+import utbm.ia54.projet.message.BlankGradient
+import utbm.ia54.projet.message.FindBlank
+import utbm.ia54.projet.message.FindGoal
+import utbm.ia54.projet.message.GoalGradient
+import utbm.ia54.projet.message.KillMessage
+import utbm.ia54.projet.message.LogMessage
+import utbm.ia54.projet.message.PathMessage
+import utbm.ia54.projet.message.SynchroResponse
+import utbm.ia54.projet.message.showPath
+
+/**
+ * @author Lucas
+ *
+ */
+agent EcoPlace extends EcoAgent{
+	uses DefaultContextInteractions, Lifecycle,Behaviors
+	
+	var space : OpenEventSpace 
+	var spaceUUID : UUID
+	var possiblePath = new ArrayList<UUID>
+	var tileIsAggressing = false
+	var tileIsAggressed = false
+	
+	on Initialize {
+		// Initialize parameters
+		position = occurrence.parameters.get(0) as Integer
+		puzzleSize = occurrence.parameters.get(1) as Integer
+		spaceUUID = occurrence.parameters.get(2) as UUID
+		
+		space = defaultContext.getOrCreateSpaceWithID(
+			spaceUUID,
+			typeof(OpenEventSpaceSpecification)
+		);
+		for(s as UUID : occurrence.parameters.get(3) as ArrayList<UUID>){
+			defaultContext.getOrCreateSpaceWithID(
+				s,
+				typeof(OpenEventSpaceSpecification)
+			).register(asEventListener())
+		}
+	}
+	
+	
+	//synchro with tile
+	on AskSynchroMessage{
+		isSynchro = false
+		idLinked = occurrence.idTile
+		tileGoal = occurrence.tileGoal
+		tileIsAggressing = false
+		emit(new SynchroResponse(ID,position),Scopes.addresses(defaultSpace.getAddress(idLinked)))
+		tileIsAggressed = false
+		isSynchro = true	
+	}
+	
+	on AggressionMessage[isSynchro && !tileIsAggressed]{
+		tileIsAggressed = true
+//		println("place " + this.position + " send aggressionMessage")
+		emit(occurrence, Scopes.addresses(defaultSpace.getAddress(idLinked)))
+	}
+	
+	//path finding
+	//finding path to blank tile
+	on FindBlank {
+		//s'il s'agit de la case vide
+		if(tileGoal == puzzleSize*puzzleSize){
+			var path = new ArrayList<UUID>
+			path.add(this.ID)
+			space.emit(new BlankGradient(occurrence.src,path))
+		}
+	}
+	
+	on BlankGradient{
+		if(!tileIsAggressing && state == SatisfactionState.UNSATISFIED){
+			if(occurrence.askedBy != idLinked){
+				if(!occurrence.path.contains(this.ID)){
+					var path = new ArrayList<UUID>
+					path.addAll(occurrence.path)
+					path.add(this.ID)
+					space.emit(new BlankGradient(occurrence.askedBy, path))
+				}
+			} else {
+				if(possiblePath.size == 0 && occurrence.path.size > 0){
+					possiblePath = occurrence.path.clone as ArrayList<UUID>
+					for(p as UUID : occurrence.path){
+						println(p)
+					}
+					Thread.sleep(500)
+					tileIsAggressing = true
+					emit(new PathMessage(possiblePath.clone as ArrayList<UUID>), Scopes.addresses(defaultSpace.getAddress(idLinked)))
+					possiblePath.clear
+				}
+				else if (possiblePath.size > occurrence.path.size && occurrence.path.size > 0){
+					possiblePath = occurrence.path.clone as ArrayList<UUID>
+				}
+			}
+		}
+	}
+	
+	on FindGoal{
+		if(position == occurrence.goal){
+			var path = new ArrayList<UUID>
+			path.add(this.ID)
+			space.emit(new GoalGradient(occurrence.src, path))
+		}
+	}
+	
+	on GoalGradient{
+		if(!tileIsAggressing && state == SatisfactionState.UNSATISFIED){
+			if(occurrence.askedBy != idLinked){
+				if(!occurrence.path.contains(this.ID)){
+					var path = new ArrayList<UUID>
+					path.addAll(occurrence.path)
+					path.add(this.ID)
+					space.emit(new GoalGradient(occurrence.askedBy, path))
+				}
+			} else {
+				if(possiblePath.size == 0 && occurrence.path.size > 0){
+					possiblePath = occurrence.path
+					for(p as UUID : occurrence.path){
+						println(p)
+					}
+					Thread.sleep(500)
+					tileIsAggressing = true
+					emit(new PathMessage(possiblePath.clone as ArrayList<UUID>), Scopes.addresses(defaultSpace.getAddress(idLinked)))
+					possiblePath.clear
+				}
+				else if(possiblePath.size > occurrence.path.size && occurrence.path.size > 0){
+					possiblePath = occurrence.path.clone as ArrayList<UUID>
+				}
+			}
+		}
+	}
+	
+	//SynchroSatisfaction
+	on BecomeSatisfied{
+		state = SatisfactionState.SATISFIED
+		emit(new SatisfiedResponse, Scopes.addresses(defaultSpace.getAddress(idLinked)))
+	}
+	
+	//debug
+	//TODO à supprimer quand le débug sera fini
+	on LogMessage{
+		println("Place : id : " + ID + " | pos : " + position + " | linkedId : " + idLinked + " | posObjLinked : " + tileGoal)
+	}
+
+	on KillMessage{
+		killMe
+	}
+	
+	on showPath{
+		for(p as UUID : possiblePath){
+			println(p)
+		}
+	}
+	
+	//test
+	
+	
+}

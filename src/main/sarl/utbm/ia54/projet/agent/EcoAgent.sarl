@@ -2,13 +2,15 @@ package utbm.ia54.projet.^agent
 
 import java.util.UUID
 
-agent EcoAgent {
+agent EcoAgent{
 	var position : Integer
-	var tileGoal : Integer
+	var tileGoal : int
 	var idLinked : UUID
 	var puzzleSize : Integer
 	var state = SatisfactionState.UNSATISFIED
+	var isSynchro : boolean
 }
+
 enum SatisfactionState{
 		UNSATISFIED,
 		SATISFIED,
