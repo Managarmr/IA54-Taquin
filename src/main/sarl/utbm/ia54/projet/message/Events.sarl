@@ -24,12 +24,10 @@ event IsSynchro{
 event AskSynchroMessage{
 	val idTile : UUID
 	val tileGoal : Integer
-	val isLeader : boolean
 	
-	new (id : UUID, pos : Integer, isLeader : boolean) {
+	new (id : UUID, pos : Integer) {
 		this.idTile = id
 		this.tileGoal = pos
-		this.isLeader = isLeader
 	}	
 }
 
@@ -42,7 +40,6 @@ event SynchroResponse{
 	}
 }
 
-
 //leadership message
 event BecomeLeader{
 	val tileGoal : int
@@ -50,7 +47,6 @@ event BecomeLeader{
 		this.tileGoal = tileGoal;
 	}
 }
-
 
 //exchange messages
 event  ExchangeMessage{
@@ -69,15 +65,16 @@ event ExchangeResponse{
 	}
 }
 
-//finding path to blank tile messages
-event FindBlank{
+//Path Finding
+
+event FindMessage{
 	val src : UUID
 	new(src : UUID){
 		this.src = src
 	}
 }
 
-event BlankGradient{
+event GradientMessage{
 	val askedBy : UUID
 	val path : ArrayList<UUID>
 	new(askedBy : UUID, path : ArrayList<UUID>){
@@ -85,24 +82,18 @@ event BlankGradient{
 		this.path = path
 	}
 }
+//finding path to blank tile messages
+event FindBlank extends FindMessage{
+	new(src : UUID){
+		super(src)
+	}
+}
 
-
-event FindGoal{
-	val src : UUID
+event FindGoal extends FindMessage{
 	val goal : Integer
 	new(src : UUID, goal : Integer){
-		this.src = src
+		super(src)
 		this.goal = goal
-	}
-}
-
-//finding path to goal messages
-event GoalGradient{
-	val askedBy : UUID
-	val path : ArrayList<UUID>
-	new(askedBy : UUID, path : ArrayList<UUID>){
-		this.askedBy = askedBy
-		this.path = path
 	}
 }
 
@@ -117,31 +108,34 @@ event PathMessage{
 
 //Aggression
 event AggressionMessage{
-	var aggressorID : UUID
-}
-
-event LeaderAggressionMessage extends AggressionMessage
-
-event FleeAggressionMessage extends AggressionMessage{
-	var path : ArrayList<UUID>
-}
-
-event FledMessage{
-	val idBlankTile : UUID
-	new(idBlankTile : UUID){
-		this.idBlankTile = idBlankTile
+	val aggressorID : UUID
+	new(aggressorID : UUID){
+		this.aggressorID = aggressorID
 	}
 }
 
-event MoveDone
+event LeaderAggressionMessage extends AggressionMessage{
+	new(aggressorID : UUID){
+		super(aggressorID)
+	}
+}
 
+event FleeAggressionMessage extends AggressionMessage{
+	val path : ArrayList<UUID>
+	new(aggressorID : UUID, path : ArrayList<UUID>){
+		super(aggressorID)
+		this.path = path
+	}
+}
 
+//satisfaction synchronization
+event BecomeSatisfied
 
+event SatisfiedResponse
 
 //TODO à supprimer quand le debug sera fini
 event sendFindGoal
 event sendFindBlank
-event showPath
 event LogMessage
 event KillMessage
 

@@ -12,6 +12,7 @@ import java.util.UUID
 import utbm.ia54.projet.message.AggressionMessage
 import utbm.ia54.projet.message.AskSynchroMessage
 import utbm.ia54.projet.message.BecomeLeader
+import utbm.ia54.projet.message.BecomeSatisfied
 import utbm.ia54.projet.message.ExchangeMessage
 import utbm.ia54.projet.message.ExchangeResponse
 import utbm.ia54.projet.message.FindBlank
@@ -22,11 +23,10 @@ import utbm.ia54.projet.message.IsSynchro
 import utbm.ia54.projet.message.KillMessage
 import utbm.ia54.projet.message.LeaderAggressionMessage
 import utbm.ia54.projet.message.LogMessage
-import utbm.ia54.projet.message.MoveDone
 import utbm.ia54.projet.message.PathMessage
 import utbm.ia54.projet.message.PlacedOn
+import utbm.ia54.projet.message.SatisfiedResponse
 import utbm.ia54.projet.message.SynchroResponse
-import utbm.ia54.projet.message.sendAggro
 import utbm.ia54.projet.message.sendFindBlank
 import utbm.ia54.projet.message.sendFindGoal
 
@@ -49,16 +49,9 @@ agent EcoTile extends EcoAgent{
 		synchronizeWith(occurrence.idPlace)
 	}
 	
-	
 //	Synchro with place
 	
 	var synchroTask : AgentTask
-	
-	on Synchro{
-		isSynchro = true
-		if(isBlankTile )emit(new MoveDone)
-		if(isLeader) live
-	}
 	
 	def synchronizeWith(id : UUID){
 		isSynchro = false
@@ -66,27 +59,28 @@ agent EcoTile extends EcoAgent{
 		position = null
 		synchroTask = task("synchro with place")
 		synchroTask.every(200)[
-			emit(new AskSynchroMessage(ID, tileGoal, isLeader), Scopes.addresses(defaultSpace.getAddress(id)))
+			emit(new AskSynchroMessage(ID, tileGoal), Scopes.addresses(defaultSpace.getAddress(id)))
 		]
 	}
+	
 	on SynchroResponse{
 		idLinked = occurrence.idPlace
 		position = occurrence.position
-		fireSynchro
+		stopSynchroLoop
 	}
 	
-	def fireSynchro{
+	def stopSynchroLoop{
 		if(synchroTask !== null) synchroTask.cancel
-		innerContext.defaultSpace.emit(new Synchro)
+		isSynchro = true
+		if(isLeader) live
+		if(isBlankTile) emit(new LogMessage)
 	}
-	
 	
 	on IsEveryoneSynchro[isSynchro]{
 		emit(new IsSynchro(this.ID))
 	}	
 	
 	// test exchange with blank
-	
 	on ExchangeMessage{	
 		stopAggression
 		emit(new ExchangeResponse(idLinked), Scopes.addresses(defaultSpace.getAddress(occurrence.idTile)))
@@ -101,53 +95,28 @@ agent EcoTile extends EcoAgent{
 //test aggression
 	var taskAggro : AgentTask
 	
-	def aggress(target : UUID){
-		isAggressing = true
-		taskAggro = task("aggression")
-		taskAggro.every(200)[
-			var evt = new AggressionMessage
-			evt.aggressorID = this.ID
-			emit(evt, Scopes.addresses(defaultSpace.getAddress(target)))
-		]
-	}
-	
 	def aggressForBlank(path : ArrayList<UUID>){
 		isAggressing = true
 		taskAggro = task("aggression")
-		println
-		println(tileGoal + " " + position)
-		for(p as UUID : path){
-			println(p)
-		}
 		taskAggro.every(200)[
-			var evt = new FleeAggressionMessage
 			var pathEvt = path.clone as ArrayList<UUID>
 			var target = pathEvt.remove(pathEvt.size-1)
-			evt.aggressorID = this.ID
-			evt.path = pathEvt
-			emit(evt, Scopes.addresses(defaultSpace.getAddress(target)))
+			emit(new FleeAggressionMessage(this.ID, pathEvt), Scopes.addresses(defaultSpace.getAddress(target)))
 		]
 	}
 	
 	def aggressForGoal(path : ArrayList<UUID>){
 		isAggressing = true
 		taskAggro = task("aggression")
-		println
-		for(p as UUID : path){
-			println(p)
-		}
 		taskAggro.every(200)[
-			var evt = new LeaderAggressionMessage
-			evt.aggressorID = this.ID
 			var target = path.get(path.size-1)
-			emit(evt, Scopes.addresses(defaultSpace.getAddress(target)))
+			emit(new LeaderAggressionMessage(this.ID), Scopes.addresses(defaultSpace.getAddress(target)))
 		]
 	}
 	
 	def stopAggression{
 		isAggressing = false
 		if(taskAggro !== null) taskAggro.cancel
-//		innerContext.defaultSpace.emit(new SynchroAggro)
 	}
 	
 	on AggressionMessage[isSynchro && isBlankTile]{
@@ -174,35 +143,16 @@ agent EcoTile extends EcoAgent{
 	}
 	
 	on BecomeLeader[occurrence.tileGoal == this.tileGoal]{
-		println("on BecomeLeader " + this.tileGoal)
 		isLeader = true
 		live
 	}	
 	
-	on SatisfactionSynchro{
-		println(this.tileGoal + " is Satisfied")
-		isLeader = false
-		var nextLeader = computeNextLeader
-		if(nextLeader != 0){
-			emit(new BecomeLeader(nextLeader))
-		}
-	}
-	
 	def live{
-		println("start live " + this.tileGoal)
-		if(isLeader){
-			if(tileGoal != position){
-				emit(new FindGoal(this.ID, this.tileGoal))
-			}
-			else{
-				state = SatisfactionState.SATISFIED
-				println(this.tileGoal + " is Satisfied")
-				isLeader = false
-				var nextLeader = computeNextLeader
-				if(nextLeader != 0){
-					emit(new BecomeLeader(nextLeader))
-				}
-			}
+		if(tileGoal != position){
+			emit(new FindGoal(this.ID, this.tileGoal))
+		}
+		else{
+			becomeSatisfied
 		}
 	}
 	
@@ -232,9 +182,16 @@ agent EcoTile extends EcoAgent{
 		
 	}
 	
-	//synchro satisfying 
+	on SatisfactionSynchro{
+		isLeader = false
+		var nextLeader = computeNextLeader
+		if(nextLeader != 0)	emit(new BecomeLeader(nextLeader))
+	}
+	
+	//synchro satisfaction 
 	var taskSatisfying : AgentTask
-	def BecomeSatisfied{
+	
+	def becomeSatisfied{
 		this.state = SatisfactionState.SATISFIED
 		taskSatisfying = task("synchronizing satisfaction state")
 		taskSatisfying.every(200)[
@@ -269,13 +226,6 @@ agent EcoTile extends EcoAgent{
 		emit(new FindGoal(this.ID, this.tileGoal))
 	}
 	
-	on sendAggro{
-//		var evt = new LeaderAggressionMessage
-//		evt.aggressorID = this.ID
-//		emit(evt, Scopes.addresses(defaultSpace.getAddress(occurrence.target)))
-		aggress(occurrence.target)
-	}
-	
 	on sendFleeAggro{
 		aggressForBlank(occurrence.path)
 	}
@@ -290,6 +240,10 @@ agent EcoTile extends EcoAgent{
 event Synchro
 
 event SynchroAggro
+
+event SatisfactionSynchro
+
+//débug
 
 event sendFleeAggro{
 	val aggressorID : UUID
@@ -306,8 +260,3 @@ event sendExchange{
 	}
 }
 
-event BecomeSatisfied
-
-event SatisfiedResponse
-
-event SatisfactionSynchro

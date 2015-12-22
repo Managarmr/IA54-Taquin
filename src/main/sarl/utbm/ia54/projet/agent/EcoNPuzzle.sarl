@@ -12,12 +12,9 @@ import java.util.ArrayList
 import java.util.HashSet
 import java.util.UUID
 import utbm.ia54.projet.message.BecomeLeader
-import utbm.ia54.projet.message.FledMessage
 import utbm.ia54.projet.message.IsEveryoneSynchro
 import utbm.ia54.projet.message.IsSynchro
 import utbm.ia54.projet.message.KillMessage
-import utbm.ia54.projet.message.LogMessage
-import utbm.ia54.projet.message.MoveDone
 import utbm.ia54.projet.message.PlacedOn
 
 agent EcoNPuzzle {
@@ -38,28 +35,6 @@ agent EcoNPuzzle {
 		
 		emit(new BecomeLeader(size))
 		
-//		emit(new LogMessage)
-//		emit(new sendExchange(tiles.get(1)), Scopes.addresses(defaultSpace.getAddress(tiles.get(0))))
-//		emit(new sendAggro(tiles.get(3)), Scopes.addresses(defaultSpace.getAddress(tiles.get(2))))
-//		var path = new ArrayList<UUID>
-//		path.add(places.get(3))
-//		path.add(places.get(2))
-//		emit(new PathMessage(path), Scopes.addresses(defaultSpace.getAddress(tiles.get(0))))
-//		emit(new sendFindBlank,Scopes.addresses(defaultSpace.getAddress(tiles.get(0))))
-//		var evt = new LeaderAggressionMessage
-//		evt.aggressorID = tiles.get(0)
-//		emit(evt, Scopes.addresses(defaultSpace.getAddress(tiles.get(1))))
-//		emit(new sendFindGoal, Scopes.addresses(defaultSpace.getAddress(tiles.get(0))))
-//		synchro
-		
-//		emit(new LogMessage)
-//		emit(new BecomeLeader(size))
-//		emit(new sendAggro(tiles.get(3)),Scopes.addresses(defaultSpace.getAddress(tiles.get(2))))
-//		emit(new sendFindBlank, Scopes.addresses(defaultSpace.getAddress(tiles.get(0))))
-//		emit(new sendFindGoal, Scopes.addresses(defaultSpace.getAddress(tiles.get(0))))
-
-//		// Stop creating
-//		killMe
 	}	
 
 //initializing
@@ -114,13 +89,6 @@ agent EcoNPuzzle {
 		println("placing done")
 	}
 	
-	
-	on MoveDone{ 	
-		println
-		emit(new LogMessage)
-//		killMe
-	}
-	
 	//synchronize
 	var synchroTiles = new HashSet<UUID>
 	
@@ -141,10 +109,5 @@ agent EcoNPuzzle {
 	
 	on Destroy{
 		emit(new KillMessage)
-	}
-	
-	on FledMessage{
-		emit(new LogMessage)
-		killMe
 	}
 }
