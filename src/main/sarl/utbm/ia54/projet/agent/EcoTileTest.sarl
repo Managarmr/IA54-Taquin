@@ -181,12 +181,23 @@ agent EcoTileTest extends EcoAgentTest {
 	
 	on BecomeLeader{
 		if(occurrence.tileGoal == tileGoal){
+			println("on BecomeLeader " + this.tileGoal)
 			isLeader = true
 			live
 		}
 	}	
 	
+	on SatisfactionSynchro{
+		println(this.tileGoal + " is Satisfied")
+		isLeader = false
+		var nextLeader = computeNextLeader
+		if(nextLeader != 0){
+			emit(new BecomeLeader(nextLeader))
+		}
+	}
+	
 	def live{
+		println("start live " + this.tileGoal)
 		if(isLeader){
 			if(tileGoal != position){
 				emit(new FindGoal(this.ID, this.tileGoal))
@@ -224,6 +235,25 @@ agent EcoTileTest extends EcoAgentTest {
 		else{
 			return 0
 		}
+	}
+	
+	//synchro satisfying 
+	var taskSatisfying : AgentTask
+	def BecomeSatisfied{
+		this.state = SatisfactionState.SATISFIED
+		taskSatisfying = task("synchronizing satisfaction state")
+		taskSatisfying.every(200)[
+			emit(new BecomeSatisfied, Scopes.addresses(defaultSpace.getAddress(this.idLinked)))
+		]
+	}
+	
+	on SatisfiedResponse{
+		if(taskSatisfying !== null) taskSatisfying.cancel
+		fireSatisfactionSynchro
+	}
+	
+	def fireSatisfactionSynchro{
+		innerContext.defaultSpace.emit(new SatisfactionSynchro)
 	}
 	
 	//debug
@@ -280,3 +310,9 @@ event sendExchange{
 		this.target = target
 	}
 }
+
+event BecomeSatisfied
+
+event SatisfiedResponse
+
+event SatisfactionSynchro

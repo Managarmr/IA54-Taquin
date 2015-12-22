@@ -59,9 +59,6 @@ agent EcoPlaceTest extends EcoAgentTest {
 		idLinked = occurrence.idTile
 		tileGoal = occurrence.tileGoal
 		tileIsAggressing = false
-		if(occurrence.isLeader && tileGoal == position){
-			this.state = SatisfactionState.SATISFIED
-		}
 		emit(new SynchroResponse(ID,position),Scopes.addresses(defaultSpace.getAddress(idLinked)))
 		tileIsAggressed = false
 		isSynchro = true	
@@ -97,6 +94,9 @@ agent EcoPlaceTest extends EcoAgentTest {
 			} else {
 				if(possiblePath.size == 0 && occurrence.path.size > 0){
 					possiblePath = occurrence.path.clone as ArrayList<UUID>
+					for(p as UUID : occurrence.path){
+						println(p)
+					}
 					Thread.sleep(500)
 					tileIsAggressing = true
 					emit(new PathMessage(possiblePath.clone as ArrayList<UUID>), Scopes.addresses(defaultSpace.getAddress(idLinked)))
@@ -129,6 +129,9 @@ agent EcoPlaceTest extends EcoAgentTest {
 			} else {
 				if(possiblePath.size == 0 && occurrence.path.size > 0){
 					possiblePath = occurrence.path
+					for(p as UUID : occurrence.path){
+						println(p)
+					}
 					Thread.sleep(500)
 					tileIsAggressing = true
 					emit(new PathMessage(possiblePath.clone as ArrayList<UUID>), Scopes.addresses(defaultSpace.getAddress(idLinked)))
@@ -140,6 +143,11 @@ agent EcoPlaceTest extends EcoAgentTest {
 		}
 	}
 	
+	//SynchroSatisfaction
+	on BecomeSatisfied{
+		state = SatisfactionState.SATISFIED
+		emit(new SatisfiedResponse, Scopes.addresses(defaultSpace.getAddress(idLinked)))
+	}
 	
 	//debug
 	//TODO à supprimer quand le débug sera fini

@@ -19,7 +19,6 @@ import utbm.ia54.projet.message.KillMessage
 import utbm.ia54.projet.message.LogMessage
 import utbm.ia54.projet.message.MoveDone
 import utbm.ia54.projet.message.PlacedOn
-import utbm.ia54.projet.message.sendFindGoal
 
 agent EcoNPuzzleTest {
 	
@@ -37,6 +36,8 @@ agent EcoNPuzzleTest {
 		
 		synchro
 		
+		emit(new BecomeLeader(size))
+		
 //		emit(new LogMessage)
 //		emit(new sendExchange(tiles.get(1)), Scopes.addresses(defaultSpace.getAddress(tiles.get(0))))
 //		emit(new sendAggro(tiles.get(3)), Scopes.addresses(defaultSpace.getAddress(tiles.get(2))))
@@ -48,7 +49,6 @@ agent EcoNPuzzleTest {
 //		var evt = new LeaderAggressionMessage
 //		evt.aggressorID = tiles.get(0)
 //		emit(evt, Scopes.addresses(defaultSpace.getAddress(tiles.get(1))))
-		emit(new BecomeLeader(size))
 //		emit(new sendFindGoal, Scopes.addresses(defaultSpace.getAddress(tiles.get(0))))
 //		synchro
 		
@@ -94,14 +94,22 @@ agent EcoNPuzzleTest {
 		println("creation done")
 		
 		var tempTiles = tiles.clone as ArrayList<UUID>
-		
-		for(i:0..<size*size){
-			var ind = (Math.random * (tempTiles.size-1)) as int
-			var tile = tempTiles.get(ind)
-			tempTiles.remove(ind)
-//			var tile = tiles.get(i)
-			emit(new PlacedOn(places.get(i)), Scopes.addresses(defaultSpace.getAddress(tile)))
-		}	
+		emit(new PlacedOn(places.get(0)), Scopes.addresses(defaultSpace.getAddress(tiles.get(5))))
+		emit(new PlacedOn(places.get(1)), Scopes.addresses(defaultSpace.getAddress(tiles.get(6))))
+		emit(new PlacedOn(places.get(2)), Scopes.addresses(defaultSpace.getAddress(tiles.get(1))))
+		emit(new PlacedOn(places.get(3)), Scopes.addresses(defaultSpace.getAddress(tiles.get(7))))
+		emit(new PlacedOn(places.get(4)), Scopes.addresses(defaultSpace.getAddress(tiles.get(2))))
+		emit(new PlacedOn(places.get(5)), Scopes.addresses(defaultSpace.getAddress(tiles.get(4))))
+		emit(new PlacedOn(places.get(6)), Scopes.addresses(defaultSpace.getAddress(tiles.get(0))))
+		emit(new PlacedOn(places.get(7)), Scopes.addresses(defaultSpace.getAddress(tiles.get(3))))
+		emit(new PlacedOn(places.get(8)), Scopes.addresses(defaultSpace.getAddress(tiles.get(8))))
+//		for(i:0..<size*size){
+//			var ind = (Math.random * (tempTiles.size-1)) as int
+//			var tile = tempTiles.get(ind)
+//			tempTiles.remove(ind)
+////			var tile = tiles.get(i)
+//			emit(new PlacedOn(places.get(i)), Scopes.addresses(defaultSpace.getAddress(tile)))
+//		}	
 		
 		println("placing done")
 	}

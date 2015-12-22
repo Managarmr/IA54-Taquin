@@ -1,243 +1,243 @@
-package utbm.ia54.projet.^agent
-
-import io.sarl.core.DefaultContextInteractions
-import io.sarl.core.Initialize
-import io.sarl.core.Lifecycle
-import io.sarl.util.Scopes
-import java.util.ArrayList
-import java.util.UUID
-import utbm.ia54.projet.message.AggressionMessage
-import utbm.ia54.projet.message.AskSynchroMessage
-import utbm.ia54.projet.message.BecomeLeader
-import utbm.ia54.projet.message.ExchangeMessage
-import utbm.ia54.projet.message.ExchangeResponse
-import utbm.ia54.projet.message.FindBlank
-import utbm.ia54.projet.message.FindGoal
-import utbm.ia54.projet.message.FledMessage
-import utbm.ia54.projet.message.FleeAggressionMessage
-import utbm.ia54.projet.message.IsEveryoneSynchro
-import utbm.ia54.projet.message.IsSynchro
-import utbm.ia54.projet.message.KillMessage
-import utbm.ia54.projet.message.LeaderAggressionMessage
-import utbm.ia54.projet.message.LogMessage
-import utbm.ia54.projet.message.MoveDone
-import utbm.ia54.projet.message.PathMessage
-import utbm.ia54.projet.message.PlacedOn
-import utbm.ia54.projet.message.SynchroResponse
-import utbm.ia54.projet.message.sendAggro
-import utbm.ia54.projet.message.sendFindBlank
-import utbm.ia54.projet.message.sendFindGoal
-
-agent EcoTile extends EcoAgent {
-
-	uses Lifecycle, DefaultContextInteractions
-	
-	var isLeader = false
-	var isSynchro = false
-	var isAggressing = false
-	var isBlankTile : boolean
-	var aggressorID : UUID
-	
-	on Initialize {
-		// Initialize parameters
-		tileGoal = occurrence.parameters.get(0) as Integer
-		puzzleSize = occurrence.parameters.get(1) as Integer
-		isBlankTile = tileGoal == puzzleSize*puzzleSize
-	}
-	
-	on PlacedOn {
-		synchronizingWith(occurrence.idPlace)
-	}
-	
-	//synchro with place
-	def synchronizingWith(id : UUID){
-		idLinked = null
-		position = null
-//		val task = task("synchronizing with place")
-//		task.every(200)[
-//			emit(new AskSynchroMessage(ID,tileGoal), Scopes.addresses(defaultSpace.getAddress(id)))
-//			if(isSynchro){
-//				task.cancel
+//package utbm.ia54.projet.^agent
+//
+//import io.sarl.core.DefaultContextInteractions
+//import io.sarl.core.Initialize
+//import io.sarl.core.Lifecycle
+//import io.sarl.util.Scopes
+//import java.util.ArrayList
+//import java.util.UUID
+//import utbm.ia54.projet.message.AggressionMessage
+//import utbm.ia54.projet.message.AskSynchroMessage
+//import utbm.ia54.projet.message.BecomeLeader
+//import utbm.ia54.projet.message.ExchangeMessage
+//import utbm.ia54.projet.message.ExchangeResponse
+//import utbm.ia54.projet.message.FindBlank
+//import utbm.ia54.projet.message.FindGoal
+//import utbm.ia54.projet.message.FledMessage
+//import utbm.ia54.projet.message.FleeAggressionMessage
+//import utbm.ia54.projet.message.IsEveryoneSynchro
+//import utbm.ia54.projet.message.IsSynchro
+//import utbm.ia54.projet.message.KillMessage
+//import utbm.ia54.projet.message.LeaderAggressionMessage
+//import utbm.ia54.projet.message.LogMessage
+//import utbm.ia54.projet.message.MoveDone
+//import utbm.ia54.projet.message.PathMessage
+//import utbm.ia54.projet.message.PlacedOn
+//import utbm.ia54.projet.message.SynchroResponse
+//import utbm.ia54.projet.message.sendAggro
+//import utbm.ia54.projet.message.sendFindBlank
+//import utbm.ia54.projet.message.sendFindGoal
+//
+//agent EcoTile extends EcoAgent {
+//
+//	uses Lifecycle, DefaultContextInteractions
+//	
+//	var isLeader = false
+//	var isSynchro = false
+//	var isAggressing = false
+//	var isBlankTile : boolean
+//	var aggressorID : UUID
+//	
+//	on Initialize {
+//		// Initialize parameters
+//		tileGoal = occurrence.parameters.get(0) as Integer
+//		puzzleSize = occurrence.parameters.get(1) as Integer
+//		isBlankTile = tileGoal == puzzleSize*puzzleSize
+//	}
+//	
+//	on PlacedOn {
+//		synchronizingWith(occurrence.idPlace)
+//	}
+//	
+//	//synchro with place
+//	def synchronizingWith(id : UUID){
+//		idLinked = null
+//		position = null
+////		val task = task("synchronizing with place")
+////		task.every(200)[
+////			emit(new AskSynchroMessage(ID,tileGoal), Scopes.addresses(defaultSpace.getAddress(id)))
+////			if(isSynchro){
+////				task.cancel
+////			}
+////		]
+//		var evt = new AskSynchroMessage(ID,tileGoal, isLeader)
+//		emit(evt, Scopes.addresses(defaultSpace.getAddress(id)))
+//		while(!isSynchro){
+//			emit(evt, Scopes.addresses(defaultSpace.getAddress(id)))
+//			Thread.sleep(100)
+//		}
+//	}
+//	
+//	on SynchroResponse{
+//		idLinked = occurrence.idPlace
+//		position = occurrence.position
+//		isSynchro = true
+//	}
+//	
+//	on IsEveryoneSynchro[isSynchro]{
+//		emit(new IsSynchro(this.ID))
+//	}	
+//	
+//	//exchange place with blank
+//	on ExchangeMessage{
+//		isSynchro = false
+//		var evt = new ExchangeResponse(this.idLinked)
+//		evt.source = defaultSpace.getAddress(this.ID)
+//		emit(evt, Scopes.addresses(occurrence.source))
+//		
+//		synchronizingWith(occurrence.idPlace)
+//		while(!isSynchro){}
+//		if(aggressorID !== null){
+//			println(this.tileGoal + " fled in " + this.position)
+//			emit(new FledMessage(occurrence.idTile), Scopes.addresses(defaultSpace.getAddress(aggressorID)))
+//			aggressorID = null
+//			isAggressing = false
+//		}
+//		if(isLeader){
+//			emit(new MoveDone)
+//			live
+//		}
+//	}
+//	
+//	on ExchangeResponse{
+//		synchronizingWith(occurrence.idPlace)
+//	}
+//
+//	//aggression
+//	def aggressForGoal(path : ArrayList<UUID>){
+//		var evt = new LeaderAggressionMessage
+//		var target = path.remove(path.size-1)
+//		evt.aggressorID = this.ID
+//		println(this.tileGoal + " aggress : " + target)
+//		isAggressing = true
+//		emit(evt,Scopes.addresses(defaultSpace.getAddress(target)))
+//	}
+//	
+//	def aggressForBlank(path : ArrayList<UUID>){
+//		var evt = new FleeAggressionMessage
+//		evt.aggressorID = this.ID
+//		var target = path.remove(path.size-1)
+//		evt.path = path
+//		isAggressing = true
+//		println(this.tileGoal + " aggress : " + target)
+//		emit(evt,Scopes.addresses(defaultSpace.getAddress(target)))
+//	}
+//	
+//	on AggressionMessage[isBlankTile]{
+//		while(!isSynchro){}
+//		emit(new ExchangeMessage(this.idLinked, this.ID),Scopes.addresses(defaultSpace.getAddress(occurrence.aggressorID)))
+//	}
+//	
+//	on LeaderAggressionMessage[!isBlankTile]{
+//		aggressorID = occurrence.aggressorID
+//		emit(new FindBlank(this.ID))
+//	}
+//	
+//	on FleeAggressionMessage[!isBlankTile]{
+//		this.aggressorID = occurrence.aggressorID
+//		var path = occurrence.path.clone as ArrayList<UUID>
+//		var target = path.remove(path.size-1)
+//		var evt = new FleeAggressionMessage
+//		evt.aggressorID = this.ID
+//		evt.path = path
+//		emit(evt, Scopes.addresses(defaultSpace.getAddress(target)))		
+//	}
+//
+//	on FledMessage{
+//		var evt = new AggressionMessage
+//		evt.aggressorID = this.ID
+//		emit(evt, Scopes.addresses(defaultSpace.getAddress(occurrence.idBlankTile)))
+//		
+//	}
+//
+//	//pathFinding
+//	on PathMessage[!isAggressing && isLeader]{
+//		var path = occurrence.path.clone as ArrayList<UUID>
+//		for(p as UUID : path){
+//			println(p)
+//		}
+//		aggressForGoal(path)
+//	}
+//	
+//	on PathMessage[!isAggressing && !isLeader]{
+//		var path = occurrence.path.clone as ArrayList<UUID>
+//		for(p as UUID : path){
+//			println(p)
+//		}
+//		aggressForBlank(path)
+//	}
+//	
+//	//leading
+//	on BecomeLeader{
+//		if (occurrence.tileGoal == tileGoal){
+//			isLeader = true
+//			live
+//		}
+//	}	
+//	
+//	def live{
+//		if(isLeader){
+//			if(tileGoal != position){
+//				emit(new FindGoal(this.ID, this.tileGoal))
 //			}
-//		]
-		var evt = new AskSynchroMessage(ID,tileGoal, isLeader)
-		emit(evt, Scopes.addresses(defaultSpace.getAddress(id)))
-		while(!isSynchro){
-			emit(evt, Scopes.addresses(defaultSpace.getAddress(id)))
-			Thread.sleep(100)
-		}
-	}
-	
-	on SynchroResponse{
-		idLinked = occurrence.idPlace
-		position = occurrence.position
-		isSynchro = true
-	}
-	
-	on IsEveryoneSynchro[isSynchro]{
-		emit(new IsSynchro(this.ID))
-	}	
-	
-	//exchange place with blank
-	on ExchangeMessage{
-		isSynchro = false
-		var evt = new ExchangeResponse(this.idLinked)
-		evt.source = defaultSpace.getAddress(this.ID)
-		emit(evt, Scopes.addresses(occurrence.source))
-		
-		synchronizingWith(occurrence.idPlace)
-		while(!isSynchro){}
-		if(aggressorID !== null){
-			println(this.tileGoal + " fled in " + this.position)
-			emit(new FledMessage(occurrence.idTile), Scopes.addresses(defaultSpace.getAddress(aggressorID)))
-			aggressorID = null
-			isAggressing = false
-		}
-		if(isLeader){
-			emit(new MoveDone)
-			live
-		}
-	}
-	
-	on ExchangeResponse{
-		synchronizingWith(occurrence.idPlace)
-	}
-
-	//aggression
-	def aggressForGoal(path : ArrayList<UUID>){
-		var evt = new LeaderAggressionMessage
-		var target = path.remove(path.size-1)
-		evt.aggressorID = this.ID
-		println(this.tileGoal + " aggress : " + target)
-		isAggressing = true
-		emit(evt,Scopes.addresses(defaultSpace.getAddress(target)))
-	}
-	
-	def aggressForBlank(path : ArrayList<UUID>){
-		var evt = new FleeAggressionMessage
-		evt.aggressorID = this.ID
-		var target = path.remove(path.size-1)
-		evt.path = path
-		isAggressing = true
-		println(this.tileGoal + " aggress : " + target)
-		emit(evt,Scopes.addresses(defaultSpace.getAddress(target)))
-	}
-	
-	on AggressionMessage[isBlankTile]{
-		while(!isSynchro){}
-		emit(new ExchangeMessage(this.idLinked, this.ID),Scopes.addresses(defaultSpace.getAddress(occurrence.aggressorID)))
-	}
-	
-	on LeaderAggressionMessage[!isBlankTile]{
-		aggressorID = occurrence.aggressorID
-		emit(new FindBlank(this.ID))
-	}
-	
-	on FleeAggressionMessage[!isBlankTile]{
-		this.aggressorID = occurrence.aggressorID
-		var path = occurrence.path.clone as ArrayList<UUID>
-		var target = path.remove(path.size-1)
-		var evt = new FleeAggressionMessage
-		evt.aggressorID = this.ID
-		evt.path = path
-		emit(evt, Scopes.addresses(defaultSpace.getAddress(target)))		
-	}
-
-	on FledMessage{
-		var evt = new AggressionMessage
-		evt.aggressorID = this.ID
-		emit(evt, Scopes.addresses(defaultSpace.getAddress(occurrence.idBlankTile)))
-		
-	}
-
-	//pathFinding
-	on PathMessage[!isAggressing && isLeader]{
-		var path = occurrence.path.clone as ArrayList<UUID>
-		for(p as UUID : path){
-			println(p)
-		}
-		aggressForGoal(path)
-	}
-	
-	on PathMessage[!isAggressing && !isLeader]{
-		var path = occurrence.path.clone as ArrayList<UUID>
-		for(p as UUID : path){
-			println(p)
-		}
-		aggressForBlank(path)
-	}
-	
-	//leading
-	on BecomeLeader{
-		if (occurrence.tileGoal == tileGoal){
-			isLeader = true
-			live
-		}
-	}	
-	
-	def live{
-		if(isLeader){
-			if(tileGoal != position){
-				emit(new FindGoal(this.ID, this.tileGoal))
-			}
-			else{
-				state = SatisfactionState.SATISFIED
-				println(this.tileGoal + " is Satisfied")
-				isLeader = false
-				var nextLeader = computeNextLeader
-				if(nextLeader != 0){
-					emit(new BecomeLeader(nextLeader))
-				}
-			}
-		}
-	}
-	
-	def computeNextLeader : int{
-		if(!isBlankTile){
-			var xPos = (tileGoal-1)%puzzleSize
-			var yPos = (tileGoal-xPos-1)/puzzleSize
-			// on est en train de placer les tuiles de la ligne supérieure
-			if(xPos > yPos){
-				xPos--;
-			}
-			// on place les tuiles de la colone gauche
-			else if(yPos < puzzleSize-1){
-				yPos++;
-			}
-			else {
-				yPos = xPos+1
-				xPos = puzzleSize-1
-			}
-			return yPos*puzzleSize+xPos +1
-		}
-		else{
-			return 0
-		}
-	}
-	
-	//debug
-	//TODO à supprimer quand le débug sera fini
-	on LogMessage{
-		println("Tile : id : posFinale : " + tileGoal + " | pos " + position + " | ID Tile : " + ID)
-	}
-	
-	on KillMessage{
-		killMe
-	}
-	
-	on sendFindBlank{
-		emit(new FindBlank(this.ID))
-	}
-	
-	on sendFindGoal{
-		emit(new FindGoal(this.ID, this.tileGoal))
-	}
-	
-	on sendAggro{
-		var evt = new LeaderAggressionMessage
-		evt.aggressorID = this.ID
-		emit(evt, Scopes.addresses(defaultSpace.getAddress(occurrence.target)))
-	}
-
-	
-}
+//			else{
+//				state = SatisfactionState.SATISFIED
+//				println(this.tileGoal + " is Satisfied")
+//				isLeader = false
+//				var nextLeader = computeNextLeader
+//				if(nextLeader != 0){
+//					emit(new BecomeLeader(nextLeader))
+//				}
+//			}
+//		}
+//	}
+//	
+//	def computeNextLeader : int{
+//		if(!isBlankTile){
+//			var xPos = (tileGoal-1)%puzzleSize
+//			var yPos = (tileGoal-xPos-1)/puzzleSize
+//			// on est en train de placer les tuiles de la ligne supérieure
+//			if(xPos > yPos){
+//				xPos--;
+//			}
+//			// on place les tuiles de la colone gauche
+//			else if(yPos < puzzleSize-1){
+//				yPos++;
+//			}
+//			else {
+//				yPos = xPos+1
+//				xPos = puzzleSize-1
+//			}
+//			return yPos*puzzleSize+xPos +1
+//		}
+//		else{
+//			return 0
+//		}
+//	}
+//	
+//	//debug
+//	//TODO à supprimer quand le débug sera fini
+//	on LogMessage{
+//		println("Tile : id : posFinale : " + tileGoal + " | pos " + position + " | ID Tile : " + ID)
+//	}
+//	
+//	on KillMessage{
+//		killMe
+//	}
+//	
+//	on sendFindBlank{
+//		emit(new FindBlank(this.ID))
+//	}
+//	
+//	on sendFindGoal{
+//		emit(new FindGoal(this.ID, this.tileGoal))
+//	}
+//	
+//	on sendAggro{
+//		var evt = new LeaderAggressionMessage
+//		evt.aggressorID = this.ID
+//		emit(evt, Scopes.addresses(defaultSpace.getAddress(occurrence.target)))
+//	}
+//
+//	
+//}
