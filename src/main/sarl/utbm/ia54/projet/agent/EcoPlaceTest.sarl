@@ -73,7 +73,6 @@ agent EcoPlaceTest extends EcoAgentTest {
 	//path finding
 	//finding path to blank tile
 	on FindBlank {
-		possiblePath.clear
 		//s'il s'agit de la case vide
 		if(tileGoal == puzzleSize*puzzleSize){
 			var path = new ArrayList<UUID>
@@ -100,6 +99,7 @@ agent EcoPlaceTest extends EcoAgentTest {
 					Thread.sleep(500)
 					tileIsAggressing = true
 					emit(new PathMessage(possiblePath.clone as ArrayList<UUID>), Scopes.addresses(defaultSpace.getAddress(idLinked)))
+					possiblePath.clear
 				}
 				else if (possiblePath.size > occurrence.path.size && occurrence.path.size > 0){
 					possiblePath = occurrence.path.clone as ArrayList<UUID>
@@ -109,7 +109,6 @@ agent EcoPlaceTest extends EcoAgentTest {
 	}
 	
 	on FindGoal{
-		possiblePath.clear
 		if(position == occurrence.goal){
 			var path = new ArrayList<UUID>
 			path.add(this.ID)
@@ -135,6 +134,7 @@ agent EcoPlaceTest extends EcoAgentTest {
 					Thread.sleep(500)
 					tileIsAggressing = true
 					emit(new PathMessage(possiblePath.clone as ArrayList<UUID>), Scopes.addresses(defaultSpace.getAddress(idLinked)))
+					possiblePath.clear
 				}
 				else if(possiblePath.size > occurrence.path.size && occurrence.path.size > 0){
 					possiblePath = occurrence.path.clone as ArrayList<UUID>

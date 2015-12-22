@@ -37,7 +37,6 @@ agent EcoTileTest extends EcoAgentTest {
 	var isLeader = false
 	var isAggressing = false
 	var isBlankTile : boolean
-	var aggressorID : UUID
 	
 	on Initialize {
 		// Initialize parameters
@@ -57,8 +56,8 @@ agent EcoTileTest extends EcoAgentTest {
 	
 	on Synchro{
 		isSynchro = true
-		if(isLeader) live
 		if(isBlankTile )emit(new MoveDone)
+		if(isLeader) live
 	}
 	
 	def synchronizeWith(id : UUID){
@@ -88,7 +87,8 @@ agent EcoTileTest extends EcoAgentTest {
 	
 	// test exchange with blank
 	
-	on ExchangeMessage{
+	on ExchangeMessage{	
+		stopAggression
 		emit(new ExchangeResponse(idLinked), Scopes.addresses(defaultSpace.getAddress(occurrence.idTile)))
 		synchronizeWith(occurrence.idPlace)
 	}
@@ -150,22 +150,16 @@ agent EcoTileTest extends EcoAgentTest {
 //		innerContext.defaultSpace.emit(new SynchroAggro)
 	}
 	
-	on ExchangeMessage[isAggressing]{
-		stopAggression
-	}
-	
 	on AggressionMessage[isSynchro && isBlankTile]{
 		emit(new ExchangeMessage(this.idLinked, this.ID), Scopes.addresses(defaultSpace.getAddress(occurrence.aggressorID)))
 	}
 	
-	on FleeAggressionMessage[isSynchro && !isBlankTile && taskAggro === null]{
-		aggressorID = occurrence.aggressorID
+	on FleeAggressionMessage[isSynchro && !isBlankTile && isAggressing == false]{
 		var path = occurrence.path.clone as ArrayList<UUID>
 		aggressForBlank(path)
 	}
 	
-	on LeaderAggressionMessage[isSynchro && !isBlankTile && taskAggro === null]{
-		aggressorID = occurrence.aggressorID
+	on LeaderAggressionMessage[isSynchro && !isBlankTile && isAggressing == false]{
 		emit(new FindBlank(this.ID))
 	}
 	
@@ -179,12 +173,10 @@ agent EcoTileTest extends EcoAgentTest {
 		aggressForGoal(path)
 	}
 	
-	on BecomeLeader{
-		if(occurrence.tileGoal == tileGoal){
-			println("on BecomeLeader " + this.tileGoal)
-			isLeader = true
-			live
-		}
+	on BecomeLeader[occurrence.tileGoal == this.tileGoal]{
+		println("on BecomeLeader " + this.tileGoal)
+		isLeader = true
+		live
 	}	
 	
 	on SatisfactionSynchro{
@@ -215,6 +207,7 @@ agent EcoTileTest extends EcoAgentTest {
 	}
 	
 	def computeNextLeader : int{
+		var nextLeader = 0
 		if(!isBlankTile){
 			var xPos = (tileGoal-1)%puzzleSize
 			var yPos = (tileGoal-xPos-1)/puzzleSize
@@ -230,11 +223,13 @@ agent EcoTileTest extends EcoAgentTest {
 				yPos = xPos+1
 				xPos = puzzleSize-1
 			}
-			return yPos*puzzleSize+xPos +1
+			nextLeader = yPos*puzzleSize+xPos +1
 		}
-		else{
-			return 0
+		if(nextLeader == puzzleSize*puzzleSize){
+			nextLeader = 0
 		}
+		return nextLeader
+		
 	}
 	
 	//synchro satisfying 
