@@ -69,15 +69,15 @@ agent EcoNPuzzle {
 		println("creation done")
 		
 		var tempTiles = tiles.clone as ArrayList<UUID>
-		emit(new PlacedOn(places.get(0)), Scopes.addresses(defaultSpace.getAddress(tiles.get(5))))
-		emit(new PlacedOn(places.get(1)), Scopes.addresses(defaultSpace.getAddress(tiles.get(6))))
-		emit(new PlacedOn(places.get(2)), Scopes.addresses(defaultSpace.getAddress(tiles.get(1))))
-		emit(new PlacedOn(places.get(3)), Scopes.addresses(defaultSpace.getAddress(tiles.get(7))))
-		emit(new PlacedOn(places.get(4)), Scopes.addresses(defaultSpace.getAddress(tiles.get(2))))
-		emit(new PlacedOn(places.get(5)), Scopes.addresses(defaultSpace.getAddress(tiles.get(4))))
+		emit(new PlacedOn(places.get(0)), Scopes.addresses(defaultSpace.getAddress(tiles.get(3))))
+		emit(new PlacedOn(places.get(1)), Scopes.addresses(defaultSpace.getAddress(tiles.get(8))))
+		emit(new PlacedOn(places.get(2)), Scopes.addresses(defaultSpace.getAddress(tiles.get(2))))
+		emit(new PlacedOn(places.get(3)), Scopes.addresses(defaultSpace.getAddress(tiles.get(4))))
+		emit(new PlacedOn(places.get(4)), Scopes.addresses(defaultSpace.getAddress(tiles.get(1))))
+		emit(new PlacedOn(places.get(5)), Scopes.addresses(defaultSpace.getAddress(tiles.get(5))))
 		emit(new PlacedOn(places.get(6)), Scopes.addresses(defaultSpace.getAddress(tiles.get(0))))
-		emit(new PlacedOn(places.get(7)), Scopes.addresses(defaultSpace.getAddress(tiles.get(3))))
-		emit(new PlacedOn(places.get(8)), Scopes.addresses(defaultSpace.getAddress(tiles.get(8))))
+		emit(new PlacedOn(places.get(7)), Scopes.addresses(defaultSpace.getAddress(tiles.get(6))))
+		emit(new PlacedOn(places.get(8)), Scopes.addresses(defaultSpace.getAddress(tiles.get(7))))
 //		for(i:0..<size*size){
 //			var ind = (Math.random * (tempTiles.size-1)) as int
 //			var tile = tempTiles.get(ind)

@@ -14,12 +14,12 @@ import utbm.ia54.projet.message.AskSynchroMessage
 import utbm.ia54.projet.message.BecomeSatisfied
 import utbm.ia54.projet.message.FindBlank
 import utbm.ia54.projet.message.FindGoal
+import utbm.ia54.projet.message.GradientMessage
 import utbm.ia54.projet.message.KillMessage
 import utbm.ia54.projet.message.LogMessage
 import utbm.ia54.projet.message.PathMessage
 import utbm.ia54.projet.message.SatisfiedResponse
 import utbm.ia54.projet.message.SynchroResponse
-import utbm.ia54.projet.message.GradientMessage
 
 /**
  * @author Lucas
@@ -33,6 +33,20 @@ agent EcoPlace extends EcoAgent{
 	var possiblePath = new ArrayList<UUID>
 	var tileIsAggressing = false
 	var tileIsAggressed = false
+	
+	//test
+	var isBlocked = false
+	on BlockMessage{
+		this.isBlocked = true
+		emit(new BlockResponse, Scopes.addresses(defaultSpace.getAddress(idLinked)))
+	}
+	
+	on UnblockMessage{
+		this.isBlocked = false
+		emit(new UnblockResponse, Scopes.addresses(defaultSpace.getAddress(idLinked)))
+	}
+	
+	//endTest
 	
 	on Initialize {
 		// Initialize parameters
@@ -84,7 +98,7 @@ agent EcoPlace extends EcoAgent{
 		space.emit(new GradientMessage(occurrence.src, path))
 	}
 	
-	on GradientMessage[!tileIsAggressing && state == SatisfactionState.UNSATISFIED && idLinked != occurrence.askedBy]{
+	on GradientMessage[!tileIsAggressing && state == SatisfactionState.UNSATISFIED && idLinked != occurrence.askedBy && !isBlocked]{
 		if(!occurrence.path.contains(this.ID)){
 			var path = new ArrayList<UUID>
 			path.addAll(occurrence.path)
@@ -93,7 +107,7 @@ agent EcoPlace extends EcoAgent{
 		}
 	}
 	
-	on GradientMessage[!tileIsAggressing && state == SatisfactionState.UNSATISFIED && idLinked == occurrence.askedBy]{
+	on GradientMessage[!tileIsAggressing && state == SatisfactionState.UNSATISFIED && idLinked == occurrence.askedBy && !isBlocked]{
 		if(possiblePath.size == 0 && occurrence.path.size > 0){
 			possiblePath = occurrence.path.clone as ArrayList<UUID>
 			Thread.sleep(500)
@@ -119,6 +133,7 @@ agent EcoPlace extends EcoAgent{
 	on LogMessage{
 		println("Place : id : " + ID + " | pos : " + position + " | linkedId : " + idLinked + " | posObjLinked : " + tileGoal)
 	}
+	
 
 	on KillMessage{
 		killMe

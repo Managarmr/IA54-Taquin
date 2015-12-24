@@ -73,7 +73,7 @@ agent EcoTile extends EcoAgent{
 		if(synchroTask !== null) synchroTask.cancel
 		isSynchro = true
 		if(isLeader) live
-		if(isBlankTile) emit(new LogMessage)
+		if(isBlankTile) {println emit(new LogMessage)}
 	}
 	
 	on IsEveryoneSynchro[isSynchro]{
@@ -144,15 +144,60 @@ agent EcoTile extends EcoAgent{
 	
 	on BecomeLeader[occurrence.tileGoal == this.tileGoal]{
 		isLeader = true
+		emit(new UnblockMessage, Scopes.addresses(defaultSpace.getAddress(idLinked)))
 		live
 	}	
 	
+	var taskBlock : AgentTask
+	def block{
+		taskBlock = task("blockPlace")
+		taskBlock.every(200)[
+			emit(new BlockMessage, Scopes.addresses(defaultSpace.getAddress(idLinked)))
+		]
+	}
+	
+	on BlockResponse[(tileGoal-2)%(puzzleSize+1) == 0]{
+		taskBlock.cancel
+		isLeader = false
+		emit(new BecomeLeader(computeNextLeader))
+	}
+	
+	on BlockResponse[(tileGoal-1)%(puzzleSize+1) == 0 ]{
+		taskBlock.cancel
+		isLeader = false
+		emit(new BecomeLeader(this.tileGoal+1))
+	}
+	
+	
+	var cornerSolved  = false
 	def live{
-		if(tileGoal != position){
-			emit(new FindGoal(this.ID, this.tileGoal))
+//		//testPart
+		println("start live " + this.tileGoal)
+		if((tileGoal-2)%(puzzleSize+1) == 0 && !cornerSolved){
+			if(position != tileGoal-1){
+				println(tileGoal + " 2 like")
+				emit(new FindGoal(this.ID,this.tileGoal-1))
+			} else {
+				println("block place where " + tileGoal + " is")
+				cornerSolved = true
+				block
+			}
+		} else if((tileGoal-1)%(puzzleSize+1) == 0 && !cornerSolved){
+			if(position != tileGoal+puzzleSize){
+				println(tileGoal + " 1 like")
+				emit(new FindGoal(this.ID, this.tileGoal+puzzleSize))
+			} else {
+				println(tileGoal + " placed, " + (tileGoal+1) +" become leader")
+				cornerSolved = true
+				block
+			}
+		} else
+		//endTestPart
+		if(tileGoal == position){
+			becomeSatisfied
 		}
 		else{
-			becomeSatisfied
+			emit(new FindGoal(this.ID, this.tileGoal))
 		}
 	}
 	
@@ -259,4 +304,12 @@ event sendExchange{
 		this.target = target
 	}
 }
+
+//test
+
+event BlockMessage
+event BlockResponse
+event UnblockMessage
+event UnblockResponse
+
 
