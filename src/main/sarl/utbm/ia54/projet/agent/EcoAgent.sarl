@@ -14,5 +14,5 @@ agent EcoAgent{
 enum SatisfactionState{
 		UNSATISFIED,
 		SATISFIED,
-		FULLY_SATISFIED
+		BLOCKED
 	}

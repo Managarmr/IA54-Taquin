@@ -133,6 +133,16 @@ event BecomeSatisfied
 
 event SatisfiedResponse
 
+//corner resolution Message
+event CornerResolutionMessage{
+	val targetGoal : Integer
+	val step : Integer
+	new(targetGoal : Integer, step : Integer){
+		this.targetGoal = targetGoal
+		this.step = step
+	}
+}
+
 //TODO à supprimer quand le debug sera fini
 event sendFindGoal
 event sendFindBlank

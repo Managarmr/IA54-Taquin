@@ -13,6 +13,7 @@ import utbm.ia54.projet.message.AggressionMessage
 import utbm.ia54.projet.message.AskSynchroMessage
 import utbm.ia54.projet.message.BecomeLeader
 import utbm.ia54.projet.message.BecomeSatisfied
+import utbm.ia54.projet.message.CornerResolutionMessage
 import utbm.ia54.projet.message.ExchangeMessage
 import utbm.ia54.projet.message.ExchangeResponse
 import utbm.ia54.projet.message.FindBlank
@@ -37,6 +38,8 @@ agent EcoTile extends EcoAgent{
 	var isLeader = false
 	var isAggressing = false
 	var isBlankTile : boolean
+	var cornerSolved  = false
+	var cornerResolutionStep = 0
 	
 	on Initialize {
 		// Initialize parameters
@@ -72,7 +75,8 @@ agent EcoTile extends EcoAgent{
 	def stopSynchroLoop{
 		if(synchroTask !== null) synchroTask.cancel
 		isSynchro = true
-		if(isLeader) live
+		if(isLeader && cornerResolutionStep == 0) {live}
+		else if(isLeader && cornerResolutionStep != 0) {cornerResolution}
 		if(isBlankTile) {println emit(new LogMessage)}
 	}
 	
@@ -144,60 +148,113 @@ agent EcoTile extends EcoAgent{
 	
 	on BecomeLeader[occurrence.tileGoal == this.tileGoal]{
 		isLeader = true
-		emit(new UnblockMessage, Scopes.addresses(defaultSpace.getAddress(idLinked)))
 		live
-	}	
+	}
 	
 	var taskBlock : AgentTask
+	
 	def block{
+		println("block")
+		this.state = SatisfactionState.BLOCKED
 		taskBlock = task("blockPlace")
 		taskBlock.every(200)[
 			emit(new BlockMessage, Scopes.addresses(defaultSpace.getAddress(idLinked)))
 		]
 	}
 	
-	on BlockResponse[(tileGoal-2)%(puzzleSize+1) == 0]{
-		taskBlock.cancel
-		isLeader = false
-		emit(new BecomeLeader(computeNextLeader))
+	def unblock{
+		println("unblock")
+		this.state = SatisfactionState.UNSATISFIED
+		taskBlock = task("unblockPlace")
+		taskBlock.every(200)[
+			emit(new UnblockMessage, Scopes.addresses(defaultSpace.getAddress(idLinked)))
+		]
 	}
-	
-	on BlockResponse[(tileGoal-1)%(puzzleSize+1) == 0 ]{
-		taskBlock.cancel
-		isLeader = false
-		emit(new BecomeLeader(this.tileGoal+1))
-	}
-	
-	
-	var cornerSolved  = false
-	def live{
-//		//testPart
-		println("start live " + this.tileGoal)
-		if((tileGoal-2)%(puzzleSize+1) == 0 && !cornerSolved){
-			if(position != tileGoal-1){
-				println(tileGoal + " 2 like")
-				emit(new FindGoal(this.ID,this.tileGoal-1))
-			} else {
-				println("block place where " + tileGoal + " is")
-				cornerSolved = true
-				block
-			}
-		} else if((tileGoal-1)%(puzzleSize+1) == 0 && !cornerSolved){
-			if(position != tileGoal+puzzleSize){
-				println(tileGoal + " 1 like")
-				emit(new FindGoal(this.ID, this.tileGoal+puzzleSize))
-			} else {
-				println(tileGoal + " placed, " + (tileGoal+1) +" become leader")
-				cornerSolved = true
-				block
-			}
-		} else
-		//endTestPart
-		if(tileGoal == position){
-			becomeSatisfied
+
+	on BlockResponse{
+		if(taskBlock !== null) taskBlock.cancel
+		var nextTile : Integer
+		//TODO modifier 
+		if(tileGoal == 1){
+			nextTile = tileGoal+1
+		} else if (tileGoal == 2){
+			nextTile = tileGoal-1
 		}
-		else{
-			emit(new FindGoal(this.ID, this.tileGoal))
+		isLeader = false
+		var nextStep = cornerResolutionStep+1
+		cornerResolutionStep = 0
+		emit(new CornerResolutionMessage(nextTile, nextStep))
+	}
+	
+	on UnblockResponse[!cornerSolved]{
+		if(taskBlock !== null) taskBlock.cancel
+		cornerResolution
+	}
+
+	on UnblockResponse[cornerSolved]{
+		if(taskBlock !== null) taskBlock.cancel
+		live
+	}
+	
+	//corner resolution
+	on CornerResolutionMessage[occurrence.targetGoal == tileGoal && !cornerSolved]{
+		isLeader = true
+		cornerResolutionStep = occurrence.step
+		cornerResolution
+	}
+	
+	on CornerResolutionMessage[occurrence.targetGoal == tileGoal && cornerSolved]{
+		innerContext.defaultSpace.emit(new BecomeLeader(this.tileGoal))
+	}
+	
+	def cornerResolution{
+		println("cornerResolution " + tileGoal + " step " + cornerResolutionStep)
+		if(state == SatisfactionState.BLOCKED || state == SatisfactionState.SATISFIED){
+			unblock
+		}
+		else {
+			if(cornerResolutionStep == 1){
+				// TODO a modifier pour le coin supérieur gauche
+				if(position != tileGoal+(2*puzzleSize)){
+					emit(new FindGoal(this.ID, this.tileGoal+(2*puzzleSize)))
+				} else {
+					block
+				}
+			} else if(cornerResolutionStep == 2){
+				if(position != tileGoal-1){
+					emit(new FindGoal(this.ID, this.tileGoal-1))
+				} else {
+					cornerSolved = true
+					block
+				}
+			} else if(cornerResolutionStep == 3){
+				if(position != tileGoal+puzzleSize){
+					emit(new FindGoal(this.ID, tileGoal+puzzleSize))
+				}
+				else {
+					cornerSolved = true
+					block
+				}
+			}
+		}
+	}
+	
+	// general resolution
+	def live{
+		println("live " + tileGoal)
+		if(state == SatisfactionState.BLOCKED) {
+			unblock
+			//TODO modifier
+		} else if(tileGoal == 1 && position != tileGoal && !cornerSolved) {
+			cornerResolutionStep = 1
+			cornerResolution
+		} else {
+			if(tileGoal == position){
+				becomeSatisfied
+			}
+			else{
+				emit(new FindGoal(this.ID, this.tileGoal))
+			}
 		}
 	}
 	

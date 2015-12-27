@@ -35,14 +35,13 @@ agent EcoPlace extends EcoAgent{
 	var tileIsAggressed = false
 	
 	//test
-	var isBlocked = false
 	on BlockMessage{
-		this.isBlocked = true
+		this.state = SatisfactionState.BLOCKED
 		emit(new BlockResponse, Scopes.addresses(defaultSpace.getAddress(idLinked)))
 	}
 	
 	on UnblockMessage{
-		this.isBlocked = false
+		this.state = SatisfactionState.UNSATISFIED
 		emit(new UnblockResponse, Scopes.addresses(defaultSpace.getAddress(idLinked)))
 	}
 	
@@ -98,7 +97,7 @@ agent EcoPlace extends EcoAgent{
 		space.emit(new GradientMessage(occurrence.src, path))
 	}
 	
-	on GradientMessage[!tileIsAggressing && state == SatisfactionState.UNSATISFIED && idLinked != occurrence.askedBy && !isBlocked]{
+	on GradientMessage[!tileIsAggressing && state == SatisfactionState.UNSATISFIED && idLinked != occurrence.askedBy]{
 		if(!occurrence.path.contains(this.ID)){
 			var path = new ArrayList<UUID>
 			path.addAll(occurrence.path)
@@ -107,7 +106,7 @@ agent EcoPlace extends EcoAgent{
 		}
 	}
 	
-	on GradientMessage[!tileIsAggressing && state == SatisfactionState.UNSATISFIED && idLinked == occurrence.askedBy && !isBlocked]{
+	on GradientMessage[!tileIsAggressing && state == SatisfactionState.UNSATISFIED && idLinked == occurrence.askedBy]{
 		if(possiblePath.size == 0 && occurrence.path.size > 0){
 			possiblePath = occurrence.path.clone as ArrayList<UUID>
 			Thread.sleep(500)
