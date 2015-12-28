@@ -41,6 +41,8 @@ agent EcoTile extends EcoAgent{
 	var cornerSolved  = false
 	var cornerResolutionStep = 0
 	
+	
+	//initializing
 	on Initialize {
 		// Initialize parameters
 		tileGoal = occurrence.parameters.get(0) as Integer
@@ -53,7 +55,6 @@ agent EcoTile extends EcoAgent{
 	}
 	
 //	Synchro with place
-	
 	var synchroTask : AgentTask
 	
 	def synchronizeWith(id : UUID){
@@ -95,8 +96,7 @@ agent EcoTile extends EcoAgent{
 		synchronizeWith(occurrence.idPlace)
 	}
 	
-
-//test aggression
+	//aggression
 	var taskAggro : AgentTask
 	
 	def aggressForBlank(path : ArrayList<UUID>){
@@ -136,6 +136,7 @@ agent EcoTile extends EcoAgent{
 		emit(new FindBlank(this.ID))
 	}
 	
+	//path receiving
 	on PathMessage[!isAggressing && !isLeader]{
 		var path = occurrence.path.clone as ArrayList<UUID>
 		aggressForBlank(path)
@@ -146,15 +147,42 @@ agent EcoTile extends EcoAgent{
 		aggressForGoal(path)
 	}
 	
+	//leadership management
 	on BecomeLeader[occurrence.tileGoal == this.tileGoal]{
 		isLeader = true
 		live
 	}
 	
+	def computeNextLeader : int{
+		var nextLeader = 0
+		if(!isBlankTile){
+			var xPos = (tileGoal-1)%puzzleSize
+			var yPos = (tileGoal-xPos-1)/puzzleSize
+			// on est en train de placer les tuiles de la ligne supérieure
+			if(xPos > yPos){
+				xPos--;
+			}
+			// on place les tuiles de la colone gauche
+			else if(yPos < puzzleSize-1){
+				yPos++;
+			}
+			else {
+				yPos = xPos+1
+				xPos = puzzleSize-1
+			}
+			nextLeader = yPos*puzzleSize+xPos +1
+		}
+		if(nextLeader == puzzleSize*puzzleSize){
+			nextLeader = 0
+		}
+		return nextLeader
+		
+	}
+	
+	//block and unblock tile and place	
 	var taskBlock : AgentTask
 	
 	def block{
-		println("block")
 		this.state = SatisfactionState.BLOCKED
 		taskBlock = task("blockPlace")
 		taskBlock.every(200)[
@@ -163,7 +191,6 @@ agent EcoTile extends EcoAgent{
 	}
 	
 	def unblock{
-		println("unblock")
 		this.state = SatisfactionState.UNSATISFIED
 		taskBlock = task("unblockPlace")
 		taskBlock.every(200)[
@@ -174,14 +201,13 @@ agent EcoTile extends EcoAgent{
 	on BlockResponse{
 		if(taskBlock !== null) taskBlock.cancel
 		var nextTile : Integer
-		//TODO modifier 
-		if(tileGoal%(puzzleSize+1) == 1 && (tileGoal+1-((tileGoal+1)%puzzleSize))/puzzleSize <= puzzleSize-1){
+		if(tileGoal%(puzzleSize+1) == 1){
 			nextTile = tileGoal+1
-		} else if (tileGoal%(puzzleSize+1) == 2 && (tileGoal+1-((tileGoal+1)%puzzleSize))/puzzleSize <= puzzleSize-1){
+		} else if (tileGoal%(puzzleSize+1) == 2){
 			nextTile = tileGoal-1
-		} else if((tileGoal+1-((tileGoal+1)%puzzleSize))/puzzleSize == puzzleSize-1){
+		} else if((tileGoal-((tileGoal-1)%puzzleSize))/puzzleSize == puzzleSize-1){
 			nextTile = tileGoal-puzzleSize
-		} else if((tileGoal+1-((tileGoal+1)%puzzleSize))/puzzleSize == puzzleSize-2){
+		} else if((tileGoal-((tileGoal-1)%puzzleSize))/puzzleSize == puzzleSize-2){
 			nextTile = tileGoal+puzzleSize
 		}
 		
@@ -213,11 +239,12 @@ agent EcoTile extends EcoAgent{
 	}
 	
 	def cornerResolution{
-		if((tileGoal%(puzzleSize+1) == 1 || tileGoal%(puzzleSize+1) == 2)
-			&& (tileGoal+1-((tileGoal+1)%puzzleSize))/puzzleSize <= puzzleSize-1){
+		var xPos = (tileGoal-1)%puzzleSize
+		var yPos = (tileGoal-xPos)/puzzleSize
+		if(tileGoal%(puzzleSize+1) == 1 || tileGoal%(puzzleSize+1) == 2){
 			topLeftCornerResolution
-		} else if((tileGoal+1-((tileGoal+1)%puzzleSize))/puzzleSize == puzzleSize-1
-			|| (tileGoal+1-((tileGoal+1)%puzzleSize))/puzzleSize == puzzleSize-2){
+		} else if((tileGoal-((tileGoal-1)%puzzleSize))/puzzleSize == puzzleSize-1 
+			|| (tileGoal-((tileGoal-1)%puzzleSize))/puzzleSize == puzzleSize-2){
 			bottomLeftCornerResolution
 		}
 	}
@@ -253,8 +280,7 @@ agent EcoTile extends EcoAgent{
 			}
 		}
 	}
-	
-	
+		
 	def bottomLeftCornerResolution{
 		println("cornerResolution " + tileGoal + " step " + cornerResolutionStep)
 		if(state == SatisfactionState.BLOCKED || state == SatisfactionState.SATISFIED){
@@ -290,13 +316,15 @@ agent EcoTile extends EcoAgent{
 	// general resolution
 	def live{
 		println("live " + tileGoal)
+		var xPos = (tileGoal-1)%puzzleSize
+		var yPos = (tileGoal-xPos)/puzzleSize
 		if(state == SatisfactionState.BLOCKED) {
 			unblock
 			//TODO modifier
-		} else if(tileGoal%(puzzleSize+1) == 1 && position != tileGoal && !cornerSolved) {
+		} else if(tileGoal%(puzzleSize+1) == 1 && yPos < puzzleSize-2 && position != tileGoal && !cornerSolved) {
 			cornerResolutionStep = 1
 			cornerResolution
-		} else if((tileGoal-(tileGoal%puzzleSize))/puzzleSize == puzzleSize-1 && position != tileGoal && !cornerSolved){
+		} else if(yPos == puzzleSize-1 && xPos < puzzleSize-2 && position != tileGoal && !cornerSolved){
 			cornerResolutionStep = 1
 			cornerResolution
 		} else {
@@ -308,33 +336,7 @@ agent EcoTile extends EcoAgent{
 			}
 		}
 	}
-	
-	def computeNextLeader : int{
-		var nextLeader = 0
-		if(!isBlankTile){
-			var xPos = (tileGoal-1)%puzzleSize
-			var yPos = (tileGoal-xPos-1)/puzzleSize
-			// on est en train de placer les tuiles de la ligne supérieure
-			if(xPos > yPos){
-				xPos--;
-			}
-			// on place les tuiles de la colone gauche
-			else if(yPos < puzzleSize-1){
-				yPos++;
-			}
-			else {
-				yPos = xPos+1
-				xPos = puzzleSize-1
-			}
-			nextLeader = yPos*puzzleSize+xPos +1
-		}
-		if(nextLeader == puzzleSize*puzzleSize){
-			nextLeader = 0
-		}
-		return nextLeader
 		
-	}
-	
 	on SatisfactionSynchro{
 		isLeader = false
 		var nextLeader = computeNextLeader
