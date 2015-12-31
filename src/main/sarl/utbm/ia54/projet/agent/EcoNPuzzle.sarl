@@ -1,25 +1,26 @@
 package utbm.ia54.projet.^agent
 
-import io.sarl.core.Behaviors
 import io.sarl.core.DefaultContextInteractions
 import io.sarl.core.Destroy
 import io.sarl.core.Initialize
-import io.sarl.core.Lifecycle
-import io.sarl.core.Logging
-import io.sarl.core.Schedules
 import io.sarl.util.Scopes
 import java.util.ArrayList
 import java.util.HashSet
 import java.util.UUID
+import utbm.ia54.projet.gui.EcoNPuzzleLauncher
+import utbm.ia54.projet.message.AskPosition
 import utbm.ia54.projet.message.BecomeLeader
 import utbm.ia54.projet.message.IsEveryoneSynchro
 import utbm.ia54.projet.message.IsSynchro
 import utbm.ia54.projet.message.KillMessage
+import utbm.ia54.projet.message.MoveDone
 import utbm.ia54.projet.message.PlacedOn
+import utbm.ia54.projet.message.SendPosition
+import utbm.ia54.projet.util.EcoNPuzzleUtils
 
 agent EcoNPuzzle {
 	
-	uses DefaultContextInteractions, Lifecycle, Logging,Behaviors, Schedules
+	uses DefaultContextInteractions
 	
 	var size : int
 	var tiles = new ArrayList<UUID>
@@ -32,6 +33,12 @@ agent EcoNPuzzle {
 		initializePuzzle
 		
 		synchro
+		
+		EcoNPuzzleLauncher.launchInterface()
+		EcoNPuzzleUtils.init(size)
+		
+		emit(new AskPosition)
+		
 		
 		emit(new BecomeLeader(size))
 		
@@ -66,27 +73,16 @@ agent EcoNPuzzle {
 		
 		while(defaultSpace.participants.size < (size*size*2)+1){
 		}
-		println("creation done")
 		
 		var tempTiles = tiles.clone as ArrayList<UUID>
-		emit(new PlacedOn(places.get(0)), Scopes.addresses(defaultSpace.getAddress(tiles.get(3))))
-		emit(new PlacedOn(places.get(1)), Scopes.addresses(defaultSpace.getAddress(tiles.get(8))))
-		emit(new PlacedOn(places.get(2)), Scopes.addresses(defaultSpace.getAddress(tiles.get(2))))
-		emit(new PlacedOn(places.get(3)), Scopes.addresses(defaultSpace.getAddress(tiles.get(4))))
-		emit(new PlacedOn(places.get(4)), Scopes.addresses(defaultSpace.getAddress(tiles.get(1))))
-		emit(new PlacedOn(places.get(5)), Scopes.addresses(defaultSpace.getAddress(tiles.get(5))))
-		emit(new PlacedOn(places.get(6)), Scopes.addresses(defaultSpace.getAddress(tiles.get(0))))
-		emit(new PlacedOn(places.get(7)), Scopes.addresses(defaultSpace.getAddress(tiles.get(6))))
-		emit(new PlacedOn(places.get(8)), Scopes.addresses(defaultSpace.getAddress(tiles.get(7))))
-//		for(i:0..<size*size){
-//			var ind = (Math.random * (tempTiles.size-1)) as int
-//			var tile = tempTiles.get(ind)
-//			tempTiles.remove(ind)
-////			var tile = tiles.get(i)
-//			emit(new PlacedOn(places.get(i)), Scopes.addresses(defaultSpace.getAddress(tile)))
-//		}	
+		for(i:0..<size*size){
+			var ind = (Math.random * (tempTiles.size-1)) as int
+			var tile = tempTiles.get(ind)
+			tempTiles.remove(ind)
+//			var tile = tiles.get(i)
+			emit(new PlacedOn(places.get(i)), Scopes.addresses(defaultSpace.getAddress(tile)))
+		}	
 		
-		println("placing done")
 	}
 	
 	//synchronize
@@ -104,7 +100,15 @@ agent EcoNPuzzle {
 			emit(evt)
 			Thread.sleep(500)
 		}
-		println("synchronizing done")
+	}
+	
+	on MoveDone{
+		synchro
+		emit(new AskPosition)
+	}
+	
+	on SendPosition {
+		EcoNPuzzleUtils.setBoard(occurrence.posCase-1,occurrence.posTile)
 	}
 	
 	on Destroy{

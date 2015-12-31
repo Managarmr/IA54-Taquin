@@ -13,6 +13,8 @@ import utbm.ia54.projet.message.AggressionMessage
 import utbm.ia54.projet.message.AskSynchroMessage
 import utbm.ia54.projet.message.BecomeLeader
 import utbm.ia54.projet.message.BecomeSatisfied
+import utbm.ia54.projet.message.BlockMessage
+import utbm.ia54.projet.message.BlockResponse
 import utbm.ia54.projet.message.CornerResolutionMessage
 import utbm.ia54.projet.message.ExchangeMessage
 import utbm.ia54.projet.message.ExchangeResponse
@@ -23,13 +25,15 @@ import utbm.ia54.projet.message.IsEveryoneSynchro
 import utbm.ia54.projet.message.IsSynchro
 import utbm.ia54.projet.message.KillMessage
 import utbm.ia54.projet.message.LeaderAggressionMessage
-import utbm.ia54.projet.message.LogMessage
+import utbm.ia54.projet.message.MoveDone
 import utbm.ia54.projet.message.PathMessage
 import utbm.ia54.projet.message.PlacedOn
 import utbm.ia54.projet.message.SatisfiedResponse
 import utbm.ia54.projet.message.SynchroResponse
-import utbm.ia54.projet.message.sendFindBlank
-import utbm.ia54.projet.message.sendFindGoal
+import utbm.ia54.projet.message.UnblockMessage
+import utbm.ia54.projet.message.UnblockResponse
+import utbm.ia54.projet.message.AskPosition
+import utbm.ia54.projet.message.SendPosition
 
 agent EcoTile extends EcoAgent{
 
@@ -37,6 +41,7 @@ agent EcoTile extends EcoAgent{
 	
 	var isLeader = false
 	var isAggressing = false
+	var isAggressed = false
 	var isBlankTile : boolean
 	var cornerSolved  = false
 	var cornerResolutionStep = 0
@@ -78,7 +83,7 @@ agent EcoTile extends EcoAgent{
 		isSynchro = true
 		if(isLeader && cornerResolutionStep == 0) {live}
 		else if(isLeader && cornerResolutionStep != 0) {cornerResolution}
-		if(isBlankTile) {println emit(new LogMessage)}
+		if(isBlankTile) {emit(new MoveDone)}
 	}
 	
 	on IsEveryoneSynchro[isSynchro]{
@@ -88,11 +93,13 @@ agent EcoTile extends EcoAgent{
 	// test exchange with blank
 	on ExchangeMessage{	
 		stopAggression
+		isAggressed = false
 		emit(new ExchangeResponse(idLinked), Scopes.addresses(defaultSpace.getAddress(occurrence.idTile)))
 		synchronizeWith(occurrence.idPlace)
 	}
 	
 	on ExchangeResponse{
+		isAggressed = false
 		synchronizeWith(occurrence.idPlace)
 	}
 	
@@ -129,10 +136,12 @@ agent EcoTile extends EcoAgent{
 	
 	on FleeAggressionMessage[isSynchro && !isBlankTile && isAggressing == false]{
 		var path = occurrence.path.clone as ArrayList<UUID>
+		isAggressed = true
 		aggressForBlank(path)
 	}
 	
 	on LeaderAggressionMessage[isSynchro && !isBlankTile && isAggressing == false]{
+		isAggressed = true
 		emit(new FindBlank(this.ID))
 	}
 	
@@ -239,8 +248,6 @@ agent EcoTile extends EcoAgent{
 	}
 	
 	def cornerResolution{
-		var xPos = (tileGoal-1)%puzzleSize
-		var yPos = (tileGoal-xPos)/puzzleSize
 		if(tileGoal%(puzzleSize+1) == 1 || tileGoal%(puzzleSize+1) == 2){
 			topLeftCornerResolution
 		} else if((tileGoal-((tileGoal-1)%puzzleSize))/puzzleSize == puzzleSize-1 
@@ -250,13 +257,11 @@ agent EcoTile extends EcoAgent{
 	}
 	
 	def topLeftCornerResolution{
-		println("cornerResolution " + tileGoal + " step " + cornerResolutionStep)
 		if(state == SatisfactionState.BLOCKED || state == SatisfactionState.SATISFIED){
 			unblock
 		}
 		else {
 			if(cornerResolutionStep == 1){
-				// TODO a modifier pour le coin supérieur gauche
 				if(position != tileGoal+(2*puzzleSize)){
 					emit(new FindGoal(this.ID, this.tileGoal+(2*puzzleSize)))
 				} else {
@@ -282,13 +287,11 @@ agent EcoTile extends EcoAgent{
 	}
 		
 	def bottomLeftCornerResolution{
-		println("cornerResolution " + tileGoal + " step " + cornerResolutionStep)
 		if(state == SatisfactionState.BLOCKED || state == SatisfactionState.SATISFIED){
 			unblock
 		}
 		else {
 			if(cornerResolutionStep == 1){
-				// TODO a modifier pour le coin supérieur gauche
 				if(position != tileGoal+2){
 					emit(new FindGoal(this.ID, this.tileGoal+2))
 				} else {
@@ -315,12 +318,10 @@ agent EcoTile extends EcoAgent{
 	
 	// general resolution
 	def live{
-		println("live " + tileGoal)
 		var xPos = (tileGoal-1)%puzzleSize
 		var yPos = (tileGoal-xPos)/puzzleSize
 		if(state == SatisfactionState.BLOCKED) {
 			unblock
-			//TODO modifier
 		} else if(tileGoal%(puzzleSize+1) == 1 && yPos < puzzleSize-2 && position != tileGoal && !cornerSolved) {
 			cornerResolutionStep = 1
 			cornerResolution
@@ -363,33 +364,15 @@ agent EcoTile extends EcoAgent{
 		innerContext.defaultSpace.emit(new SatisfactionSynchro)
 	}
 	
-	//debug
-	//TODO à supprimer quand le débug sera fini
-	on LogMessage{
-		println("Tile : id : posFinale : " + tileGoal + " | pos " + position + " | ID Tile : " + ID)
+	//GUI message
+	on AskPosition{
+		emit(new SendPosition(this.position, this.tileGoal, this.isLeader, this.isBlankTile, this.isAggressed))
 	}
+	
 	
 	on KillMessage{
 		killMe
 	}
-	
-	on sendFindBlank{
-		emit(new FindBlank(this.ID))
-	}
-	
-	on sendFindGoal{
-		emit(new FindGoal(this.ID, this.tileGoal))
-	}
-	
-	on sendFleeAggro{
-		aggressForBlank(occurrence.path)
-	}
-	
-	on sendExchange{
-		emit(new ExchangeMessage(idLinked, this.ID), Scopes.addresses(defaultSpace.getAddress(occurrence.target)))
-	}
-
-	
 }
 
 event Synchro
@@ -397,29 +380,3 @@ event Synchro
 event SynchroAggro
 
 event SatisfactionSynchro
-
-//débug
-
-event sendFleeAggro{
-	val aggressorID : UUID
-	val path : ArrayList<UUID>
-	new(aggressorID : UUID, path : ArrayList<UUID>){
-		this.aggressorID = aggressorID
-		this.path = path
-	}
-}
-event sendExchange{
-	val target : UUID
-	new(target : UUID){
-		this.target = target
-	}
-}
-
-//test
-
-event BlockMessage
-event BlockResponse
-event UnblockMessage
-event UnblockResponse
-
-

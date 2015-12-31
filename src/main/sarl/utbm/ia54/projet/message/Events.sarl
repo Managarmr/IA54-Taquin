@@ -143,15 +143,35 @@ event CornerResolutionMessage{
 	}
 }
 
-//TODO à supprimer quand le debug sera fini
-event sendFindGoal
-event sendFindBlank
-event LogMessage
-event KillMessage
+//block and unblock messages
+event BlockMessage
 
-event sendAggro{
-	val target : UUID
-	new(target : UUID){
-		this.target = target
+event BlockResponse
+
+event UnblockMessage
+
+event UnblockResponse
+
+// GUI messages
+event AskPosition
+
+event SendPosition {
+	val posCase : int
+	val posTile : int
+	val isLeader : boolean
+	val isBlankTile : boolean
+	val isAggressed : boolean
+	
+	new (posCase : int, posTile : int, isLeader : boolean, isBlankTile : boolean, isAggressed : boolean) {
+		this.posCase = posCase
+		this.posTile = posTile
+		this.isLeader = isLeader
+		this.isBlankTile = isBlankTile
+		this.isAggressed = isAggressed
 	}
 }
+
+event MoveDone
+
+event KillMessage
+

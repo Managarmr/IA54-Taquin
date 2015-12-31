@@ -12,14 +12,17 @@ import java.util.UUID
 import utbm.ia54.projet.message.AggressionMessage
 import utbm.ia54.projet.message.AskSynchroMessage
 import utbm.ia54.projet.message.BecomeSatisfied
+import utbm.ia54.projet.message.BlockMessage
+import utbm.ia54.projet.message.BlockResponse
 import utbm.ia54.projet.message.FindBlank
 import utbm.ia54.projet.message.FindGoal
 import utbm.ia54.projet.message.GradientMessage
 import utbm.ia54.projet.message.KillMessage
-import utbm.ia54.projet.message.LogMessage
 import utbm.ia54.projet.message.PathMessage
 import utbm.ia54.projet.message.SatisfiedResponse
 import utbm.ia54.projet.message.SynchroResponse
+import utbm.ia54.projet.message.UnblockMessage
+import utbm.ia54.projet.message.UnblockResponse
 
 /**
  * @author Lucas
@@ -106,7 +109,7 @@ agent EcoPlace extends EcoAgent{
 		}
 	}
 	
-	on GradientMessage[!tileIsAggressing && state == SatisfactionState.UNSATISFIED && idLinked == occurrence.askedBy]{
+	on GradientMessage[state == SatisfactionState.UNSATISFIED && idLinked == occurrence.askedBy]{
 		if(possiblePath.size == 0 && occurrence.path.size > 0){
 			possiblePath = occurrence.path.clone as ArrayList<UUID>
 			Thread.sleep(500)
@@ -127,13 +130,6 @@ agent EcoPlace extends EcoAgent{
 		emit(new SatisfiedResponse, Scopes.addresses(defaultSpace.getAddress(idLinked)))
 	}
 	
-	//debug
-	//TODO à supprimer quand le débug sera fini
-	on LogMessage{
-		println("Place : id : " + ID + " | pos : " + position + " | linkedId : " + idLinked + " | posObjLinked : " + tileGoal)
-	}
-	
-
 	on KillMessage{
 		killMe
 	}
