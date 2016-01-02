@@ -71,6 +71,7 @@ agent EcoPlace extends EcoAgent{
 	
 	//synchro with tile
 	on AskSynchroMessage{
+		possiblePath.clear
 		isSynchro = false
 		idLinked = occurrence.idTile
 		tileGoal = occurrence.tileGoal
@@ -115,7 +116,6 @@ agent EcoPlace extends EcoAgent{
 			Thread.sleep(500)
 			tileIsAggressing = true
 			emit(new PathMessage(possiblePath.clone as ArrayList<UUID>), Scopes.addresses(defaultSpace.getAddress(idLinked)))
-			possiblePath.clear
 		}
 		else if (possiblePath.size > occurrence.path.size && occurrence.path.size > 0){
 			possiblePath = occurrence.path.clone as ArrayList<UUID>
