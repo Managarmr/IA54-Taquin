@@ -108,8 +108,14 @@ agent EcoNPuzzle {
 	}
 	
 	on SendPosition {
-		EcoNPuzzleUtils.setBoard(occurrence.posCase-1,occurrence.posTile)
-	}
+        EcoNPuzzleUtils.setBoard(occurrence.posCase-1,occurrence.posTile)
+        if(occurrence.isLeader)
+            EcoNPuzzleUtils.setLeader(occurrence.posTile)
+        if(occurrence.isBlankTile)
+            EcoNPuzzleUtils.setBlankTile(occurrence.posTile)
+    }
+
+
 	
 	on Destroy{
 		emit(new KillMessage)

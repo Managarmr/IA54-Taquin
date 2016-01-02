@@ -9,11 +9,15 @@ public class EcoNPuzzleUtils {
 	private static int size;
 	private static int[][] board;
 	private static boolean init = false;
+	private static int leader;
+	private static int blankTile;
 	
 	// Constructor
 	public static void init(int size) {
 		 EcoNPuzzleUtils.size = size;
 		 EcoNPuzzleUtils.board = new int[size][size];
+		 EcoNPuzzleUtils.leader = size;
+		 EcoNPuzzleUtils.blankTile = size*size;
 		 EcoNPuzzleUtils.init = true;
 	}
 
@@ -49,12 +53,30 @@ public class EcoNPuzzleUtils {
 	}
 	
 	public static void setBoard(int num, int value) {
-		int x = num%getSize();
-		int y = (int) Math.floor(num/getSize());
-		EcoNPuzzleUtils.board[x][y] = value;
+		if(EcoNPuzzleUtils.isInit()) {
+			int x = num%getSize();
+			int y = (int) Math.floor(num/getSize());
+			EcoNPuzzleUtils.board[x][y] = value;
+		}
 	}
 
 	public static boolean isInit() {
 		return init;
+	}
+	
+	public static void setLeader(int leader) {
+		EcoNPuzzleUtils.leader = leader;
+	}
+	
+	public static int getLeader() {
+		return leader;
+	}
+	
+	public static void setBlankTile(int blankTile) {
+		EcoNPuzzleUtils.blankTile = blankTile;
+	}
+	
+	public static int getBlankTile() {
+		return blankTile;
 	}
 }

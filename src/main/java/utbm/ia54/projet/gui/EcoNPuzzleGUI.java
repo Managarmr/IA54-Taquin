@@ -3,16 +3,21 @@ package utbm.ia54.projet.gui;
 import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.JFrame;
+import javax.swing.Timer;
 
 import utbm.ia54.projet.util.EcoNPuzzleUtils;
 
-public class EcoNPuzzleGUI extends JFrame {
+public class EcoNPuzzleGUI extends JFrame implements ActionListener {
 	
-	private static final long serialVersionUID = -1436701208810625113L;
+	private static final long serialVersionUID = 1439108651892406386L;
 	private int cellSize = 64;
-	private int windowOffset = 30;
+	private int windowOffset = 28;
+	
+	private Timer timer = new Timer(500, this);
 	
 	public EcoNPuzzleGUI(String title) {
 		super(title);
@@ -20,14 +25,16 @@ public class EcoNPuzzleGUI extends JFrame {
 		// Initialize
 		int size = EcoNPuzzleUtils.getSize();
 		
-		//
+		// Init context
 		setVisible(true);
 		setSize(size*cellSize+1,size*cellSize+windowOffset+1);
 		setBackground(Color.lightGray);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setResizable(false);
-		
-		new Thread(new Runner()).start();
+						
+		// Start the timer
+		timer.start();
+		//new Thread(new Runner()).start();
 	}	
 	
 	public void paint(Graphics g) {
@@ -53,10 +60,17 @@ public class EcoNPuzzleGUI extends JFrame {
 	    	for(int y=0; y<size; ++y) {
 	    		// Get cell value 
 	    		int v = EcoNPuzzleUtils.getBoard(x, y);
+	    		int leader = EcoNPuzzleUtils.getLeader();
+	    		int blankTile = EcoNPuzzleUtils.getBlankTile();
 	    		
 	    		// Draw cell
 	    		//g.setColor(new Color((int) (Math.random()*120), (int) (Math.random()*120), (int) (Math.random()*120)));
-	    		g.setColor(Color.DARK_GRAY);
+	    		if(leader == v)
+	    			g.setColor(Color.BLUE);
+	    		else if(blankTile == v)
+	    			g.setColor(Color.WHITE);
+	    		else
+	    			g.setColor(Color.DARK_GRAY);
 	    		g.fillRect(x*cellSize, y*cellSize, cellSize, cellSize);
 	    		g.setColor(Color.BLACK);
 	    		g.drawRect(x*cellSize, y*cellSize, cellSize, cellSize);
@@ -77,20 +91,24 @@ public class EcoNPuzzleGUI extends JFrame {
         @Override
         public void run() 
         {
-            while(true)
-            {
+            while(true) {
             	// Update GUI
             	repaint();
-                try 
-                {
+                try {
                     // Refresh
                     Thread.sleep(200);
                 } 
-                catch (InterruptedException e) 
-                {
+                catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
         }
     }
+
+	@Override
+	public void actionPerformed(ActionEvent ev) {
+		if(ev.getSource() == timer) {
+			repaint(); // this will call at every 1 second
+	    }
+	}
 }
