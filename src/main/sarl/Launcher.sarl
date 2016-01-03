@@ -1,0 +1,10 @@
+import io.janusproject.Boot
+import utbm.ia54.projet.^agent.EcoNPuzzle
+import com.google.inject.Module
+
+class Launcher{
+	static def main(args : String[]) : void{
+		var arg = {"3"}
+		var janusKernel = Boot::startJanus(null as Class<? extends Module> ,typeof(EcoNPuzzle),arg)
+	}
+}

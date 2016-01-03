@@ -8,6 +8,7 @@ public class EcoNPuzzleUtils {
 	// Attributes
 	private static int size;
 	private static int[][] board;
+	private static int[][] agress;
 	private static boolean init = false;
 	private static int leader;
 	private static int blankTile;
@@ -16,6 +17,7 @@ public class EcoNPuzzleUtils {
 	public static void init(int size) {
 		 EcoNPuzzleUtils.size = size;
 		 EcoNPuzzleUtils.board = new int[size][size];
+		 EcoNPuzzleUtils.agress = new int[size][size];
 		 EcoNPuzzleUtils.leader = size;
 		 EcoNPuzzleUtils.blankTile = size*size;
 		 EcoNPuzzleUtils.init = true;
@@ -57,6 +59,36 @@ public class EcoNPuzzleUtils {
 			int x = num%getSize();
 			int y = (int) Math.floor(num/getSize());
 			EcoNPuzzleUtils.board[x][y] = value;
+		}
+	}
+	
+	public static int[][] getAgress() {
+		return agress;
+	}
+
+	public static int getAgress(int x, int y) {
+		return agress[x][y];
+	}
+	
+	public static int getAgress(int num) {
+		int x = num%getSize();
+		int y = (int) Math.floor(num/getSize());
+		return getAgress(x, y);
+	}
+	
+	public static void setAgress(int[][] board) {
+		EcoNPuzzleUtils.agress = board;
+	}	
+	
+	public static void setAgress(int x, int y, int value) {
+		EcoNPuzzleUtils.agress[x][y] = value;
+	}
+	
+	public static void setAgress(int num, int value) {
+		if(EcoNPuzzleUtils.isInit()) {
+			int x = num%getSize();
+			int y = (int) Math.floor(num/getSize());
+			EcoNPuzzleUtils.agress[x][y] = value;
 		}
 	}
 

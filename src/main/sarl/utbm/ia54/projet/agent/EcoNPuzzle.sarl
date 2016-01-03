@@ -109,11 +109,20 @@ agent EcoNPuzzle {
 	
 	on SendPosition {
         EcoNPuzzleUtils.setBoard(occurrence.posCase-1,occurrence.posTile)
+        
+        if(occurrence.isAggressed)
+            EcoNPuzzleUtils.setAgress(occurrence.posCase-1,1)
+        else
+            EcoNPuzzleUtils.setAgress(occurrence.posCase-1,0)
+            
         if(occurrence.isLeader)
             EcoNPuzzleUtils.setLeader(occurrence.posTile)
+        
         if(occurrence.isBlankTile)
             EcoNPuzzleUtils.setBlankTile(occurrence.posTile)
     }
+
+
 
 
 	

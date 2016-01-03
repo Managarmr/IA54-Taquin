@@ -6,5 +6,6 @@
 	<classpathentry kind="src" path="src/main/generated-sources/xtend"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="con" path="io.sarl.eclipse.launching.SARL_SUPPORT"/>
+	<classpathentry kind="lib" path="C:/Users/Lucas/Desktop/Eclipse SARL/io.janusproject.kernel-2.0.3.0-with-dependencies.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
